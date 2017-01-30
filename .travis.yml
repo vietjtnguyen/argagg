@@ -1,0 +1,4 @@
+language: cpp
+dist: trusty
+script:
+  - mkdir build && cd build && cmake .. && cmake --build . && ctest -V

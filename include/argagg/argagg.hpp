@@ -28,8 +28,8 @@
  * IN THE SOFTWARE.
  */
 #pragma once
-#ifndef CLARG_CLARG_CLARG_HPP
-#define CLARG_CLARG_CLARG_HPP
+#ifndef ARGAGG_ARGAGG_ARGAGG_HPP
+#define ARGAGG_ARGAGG_ARGAGG_HPP
 
 #include <algorithm>
 #include <cstdlib>
@@ -548,4 +548,4 @@ std::ostream& operator << (std::ostream& os, const argagg::parser& x)
 }
 
 
-#endif // CLARG_CLARG_CLARG_HPP
+#endif // ARGAGG_ARGAGG_ARGAGG_HPP

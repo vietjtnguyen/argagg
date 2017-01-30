@@ -3,7 +3,7 @@ Argument Aggregator {#mainpage}
 
 This is the Doxygen documentation for Argument Aggregator, a simple C++11 argument parser.
 
-To use create a argagg::parser object. However, the struct doesn't provide any explicit methods for defining flags. Instead we define the flags using initialization lists.
+To use just create an argagg::parser object. However, the struct doesn't provide any explicit methods for defining flags. Instead we define the flags using initialization lists.
 
     argagg::parser argparser {{
         {"help", {"-h", "--help"}, "shows this help message", 0},

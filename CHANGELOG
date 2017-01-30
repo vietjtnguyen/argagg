@@ -1,3 +1,9 @@
+0.1.2
+-----
+
+- Fixed documentation installation under RPM building
+- Added missing build dependencies from RPM specfile
+
 0.1.1
 -----
 

@@ -1,3 +1,10 @@
+0.1.1
+-----
+
+- Removed gcc color output flag
+- Fixed grammar in documentation
+- Updated include guard definition name
+
 0.1.0
 -----
 

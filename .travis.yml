@@ -1,3 +1,4 @@
 language: cpp
+dist: xenial
 script:
   - mkdir build && cd build && cmake .. && cmake --build . && ctest -V

@@ -68,3 +68,24 @@ Finally, you can get all of the positional arguments as an `std::vector` using t
 For a more detailed treatment take a look at the [examples](./examples) or [test cases](./test).
 
 Doxygen documentation can be found [here](https://vietjtnguyen.github.io/argagg/latest/).
+
+Installation
+------------
+
+There is just a single header file ([`argagg.hpp`](./include/argagg/argagg.hpp)) so you can copy that whereever you want. If you want to properly install it you can use the CMake script. The CMake script exists primarily to build the tests and documentation, but an install target for the header is provided.
+
+The standard installation dance using CMake and `make` is as follows:
+
+```sh
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+make install
+ctest -V # optionally run tests
+```
+
+Override [`CMAKE_INSTALL_PREFIX`](https://cmake.org/cmake/help/v2.8.11/cmake.html#variable:CMAKE_INSTALL_PREFIX) to change the installation location. By default (on UNIX variants) it will install to `/usr/local` resulting in the header being copied to `/usr/local/include/argagg/argagg.hpp`.
+
+If you have [Doxygen](http://www.stack.nl/~dimitri/doxygen/) it should build and install documentation as well.
+
+There are no dependencies other than the standard library.

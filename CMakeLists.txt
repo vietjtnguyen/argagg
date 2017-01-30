@@ -104,6 +104,7 @@ if( ARGAGG_BUILD_DOCS AND DOXYGEN )
   # documentation for regeneration.
   file(
     GLOB_RECURSE DOC_INPUTS
+    "${CMAKE_CURRENT_SOURCE_DIR}/doc/*"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*"
     "${CMAKE_CURRENT_SOURCE_DIR}/test/*"
   )

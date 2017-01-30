@@ -66,3 +66,5 @@ Generally `argagg` tries to do a minimal amount of work to leave most of the con
 Finally, you can get all of the positional arguments as an `std::vector` using the `argagg::args::args` member.
 
 For a more detailed treatment take a look at the [examples](./examples) or [test cases](./test).
+
+Doxygen documentation can be found [here](https://vietjtnguyen.github.io/argagg/latest/).

@@ -128,7 +128,7 @@ if( ARGAGG_BUILD_DOCS AND DOXYGEN )
       "${CMAKE_BINARY_DIR}/share/doc/${PROJECT_NAME}/html"
       "${CMAKE_BINARY_DIR}/share/doc/${PROJECT_NAME}/xml"
     # This command makes sure that the output folder exists first.
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/${SHARE_INSTALL_PREFIX}/doc/${PROJECT_NAME}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/share/doc/${PROJECT_NAME}"
     # This command performs the doxygen documentation generation.
     COMMAND ${DOXYGEN} doxygen.cfg
     # Run the above commands in the build folder.
@@ -153,8 +153,8 @@ if( ARGAGG_BUILD_DOCS AND DOXYGEN )
   
   # Finally set up an installation target for the documentation.
   install(
-    DIRECTORY "${CMAKE_BINARY_DIR}/share"
-    DESTINATION .
+    DIRECTORY "${CMAKE_BINARY_DIR}/share/"
+    DESTINATION "${SHARE_INSTALL_PREFIX}"
   )
 
 endif()

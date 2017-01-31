@@ -1,5 +1,5 @@
 Name:           argagg
-Version:        0.1.2
+Version:        0.1.3
 Release:        1%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
@@ -47,5 +47,8 @@ ctest -V %{?_smp_mflags}
 %{_includedir}/*
 
 %changelog
+* Mon Jan 30 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
+- Added missing files specification for empty parent package
+
 * Sun Jan 29 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
 - Initial packaging

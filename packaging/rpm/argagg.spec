@@ -40,6 +40,8 @@ make %{?_smp_mflags}
 %check
 ctest -V %{?_smp_mflags}
 
+%files
+
 %files devel
 %doc %{_datadir}/doc/%{name}
 %{_includedir}/*

@@ -70,8 +70,8 @@ struct unexpected_flag_error
 /**
  * @brief
  * The set of template instantiations that convert C-strings to other types for
- * the flag::as(), flags::as(), flags::as(), args::as(), and args::all_as()
- * methods are placed in this namespace.
+ * the flag::as(), flags::as(), result::as(), and result::all_as() methods are
+ * placed in this namespace.
  */
 namespace convert {
 
@@ -201,23 +201,27 @@ struct flags {
 
   /**
    * @brief
-   * Converts the argument parsed for this flag instance into the given type
-   * using the type matched conversion function ::argagg::convert::arg(). If
-   * there was not an argument parsed for this flag instance then a
-   * std::invalid_argument exception is thrown.
+   * Converts the argument parsed for the LAST flag parse result for the parent
+   * flag_spec. For example, if this was for "-f 1 -f 2 -f 3" then calling this
+   * method for an integer type will return 3. If there are no flag parse
+   * results then a std::out_of_range exception is thrown. Any exceptions
+   * thrown by argagg::flag::as() are not handled.
    */
   template <typename T>
   T as() const
   {
+    if (this->all.size() == 0) {
+      throw std::out_of_range("no flag arguments to convert");
+    }
     return this->all.back().as<T>();
   }
 
   /**
    * @brief
-   * Converts the argument parsed for this flag instance into the given type
-   * using the type matched conversion function ::argagg::convert::arg(). If
-   * there was not an argument parsed for this flag instance then the provided
-   * default value is returned instead.
+   * Converts the argument parsed for the LAST flag parse result for the parent
+   * flag_spec. For example, if this was for "-f 1 -f 2 -f 3" then calling this
+   * method for an integer type will return 3. If there are no flag parse
+   * results then the provided default value is returned instead.
    */
   template <typename T>
   T as(const T& t) const

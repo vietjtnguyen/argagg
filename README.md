@@ -77,7 +77,7 @@ if (args["help"]) {
 
 Generally `argagg` tries to do a minimal amount of work to leave most of the control with the user.
 
-If you want to get a flag argument but fallback on a default value if it doesn't exist then you can use the argagg::flags::as() API but providing a default value.
+If you want to get a flag argument but fallback on a default value if it doesn't exist then you can use the `argagg::flags::as()` API but providing a default value.
 
 ```cpp
 auto delim = args["delim"].as<std::string>(",");

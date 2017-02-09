@@ -9,7 +9,7 @@ int main(
   int argc,
   const char** argv)
 {
-  using argagg::args;
+  using argagg::result;
   using argagg::flag_spec;
   using argagg::parser;
   using std::cerr;
@@ -52,7 +52,7 @@ int main(
 
   // Use our argument parser to... parse the command line arguments. If there
   // are any problems then just spit out the usage and help text and exit.
-  args args;
+  argagg::result args;
   try {
     args = argparser.parse(argc, argv);
   } catch (const std::exception& e) {
@@ -64,21 +64,18 @@ int main(
 
   // If the help flag was specified then spit out the usage and help text and
   // exit.
-  if (args.has_flag("help")) {
+  if (args["help"]) {
     cerr << usage.str() << argparser;
     return EXIT_SUCCESS;
   }
 
   // Use comma as the separator unless one was specified.
-  string sep = ",";
-  if (args.has_flag("sep")) {
-    sep = args["sep"].as<string>();
-  }
+  auto sep = args["sep"].as<string>(",");
 
   // Determine output stream.
   ofstream output_file;
   ostream* output = &std::cout;
-  if (args.has_flag("output")) {
+  if (args["output"]) {
     output_file.open(args["output"].as<string>());
     output = &output_file;
   }
@@ -89,9 +86,9 @@ int main(
          << "Not enough arguments" << endl;
     return EXIT_FAILURE;
   }
-  for (auto& arg : args.args) {
+  for (auto& arg : args.pos) {
     *output << arg;
-    if (arg != args.args.back()) {
+    if (arg != args.pos.back()) {
       *output << sep;
     }
   }

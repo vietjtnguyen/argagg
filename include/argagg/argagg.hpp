@@ -47,7 +47,7 @@ namespace argagg {
 
 /**
  * @brief
- * This exception is thrown when a flag is parsed unexpected such as when an
+ * This exception is thrown when a flag is parsed unexpectedly such as when an
  * argument was expected for a previous flag or if a flag was found that has
  * not been defined.
  */
@@ -70,8 +70,8 @@ struct unexpected_flag_error
 /**
  * @brief
  * The set of template instantiations that convert C-strings to other types for
- * the flag::as(), flag::all_as(), args::as(), and args::all_as() methods are
- * placed in this namespace.
+ * the flag::as(), flags::as(), flags::as(), args::as(), and args::all_as()
+ * methods are placed in this namespace.
  */
 namespace convert {
 
@@ -88,135 +88,177 @@ namespace convert {
 
 /**
  * @brief
- * Contains the parser results for a flag.
+ * Contains the parser result for a single flag instance.
  */
 struct flag {
 
   /**
    * @brief
-   * Converts the first argument associated with this flag into the given type
-   * using the conversion functions in the arg namespace. If there are no
-   * arguments then an out of bounds access on the args vector will occur.
+   * Argument parsed for this flag.
+   */
+  const char* arg;
+
+  /**
+   * @brief
+   * Converts the argument parsed for this flag instance into the given type
+   * using the type matched conversion function ::argagg::convert::arg(). If
+   * there was not an argument parsed for this flag instance then a
+   * std::invalid_argument exception is thrown.
    */
   template <typename T>
-  T as(std::size_t i = 0) const
+  T as() const
   {
-    return convert::arg<T>(this->args[i]);
+    if (this->arg) {
+      return convert::arg<T>(this->arg);
+    } else {
+      throw std::invalid_argument("flag has no argument");
+    }
   }
 
   /**
    * @brief
-   * Converts all arguments associated with this flag into a vector of the
-   * given type using the conversion functions in the arg namespace.
+   * Converts the argument parsed for this flag instance into the given type
+   * using the type matched conversion function ::argagg::convert::arg(). If
+   * there was not an argument parsed for this flag instance then the provided
+   * default value is returned instead.
    */
   template <typename T>
-  std::vector<T> all_as() const
+  T as(const T& t) const
   {
-    std::vector<T> v(this->args.size());
-    std::transform(
-      this->args.begin(), this->args.end(), v.begin(),
-      [](const char* arg) {
-        return convert::arg<T>(arg);
-      });
-    return v;
+    if (this->arg) {
+      return convert::arg<T>(this->arg);
+    } else {
+      return t;
+    }
   }
 
   /**
    * @brief
-   * Number of times this flag occurs.
+   * Since we have the flag::as() API we might as well alias it as an implicit
+   * conversion operator. This performs implicit conversion using the as()
+   * method.
    */
-  int occurences;
+  template <typename T>
+  operator T () const
+  {
+    return this->as<T>();
+  }
 
   /**
    * @brief
-   * Arguments parsed for this flag.
+   * Implicit boolean conversion function which returns true if there is an
+   * argument for this single flag.
    */
-  std::vector<const char*> args;
+  operator bool () const
+  {
+    return this->arg != nullptr;
+  }
 
 };
 
 
 /**
  * @brief
- * Represents the results of the parser including flags, flag arguments, and
- * positional arguments.
+ * Represents multiple parse results for a single flag_spec. If treated as
+ * a single parse result it defaults to the last parse result. Note that an
+ * instance of this struct is not created if NO flags a parsed for a given
+ * flag_spec.
  */
-struct args {
+struct flags {
 
   /**
    * @brief
-   * Used to check if a flag was specified at all.
+   * All flag parse results for this flag spec.
    */
-  bool has_flag(const std::string& name) const
-  {
-    return this->flags.find(name) != this->flags.end();
-  }
+  std::vector<::argagg::flag> all;
 
   /**
    * @brief
-   * Get the parser results for the given flag. If the flag was not parsed at
-   * all then the exception from the unordered_map will bubble through so check
-   * if the flag exists in the first place with has_flag().
-   */
-  flag& operator [] (const std::string& name)
-  {
-    return this->flags.at(name);
-  }
-
-  /**
-   * @brief
-   * Get the parser results for the given flag. If the flag was not parsed at
-   * all then the exception from the unordered_map will bubble through so check
-   * if the flag exists in the first place with has_flag().
-   */
-  const flag& operator [] (const std::string& name) const
-  {
-    return this->flags.at(name);
-  }
-
-  /**
-   * @brief
-   * Gets the number of positional arguments.
+   * Gets the number of times the flag_spec shows up.
    */
   std::size_t count() const
   {
-    return this->args.size();
+    return this->all.size();
   }
 
   /**
    * @brief
-   * Gets a positional argument by index.
+   * Gets a single flag result by index.
    */
-  const char* operator [] (std::size_t index) const
+  ::argagg::flag& operator [] (std::size_t index)
   {
-    return this->args[index];
+    return this->all[index];
   }
 
   /**
    * @brief
-   * Gets a positional argument converted to the type.
+   * Gets a single flag result by index.
+   */
+  const ::argagg::flag& operator [] (std::size_t index) const
+  {
+    return this->all[index];
+  }
+
+  /**
+   * @brief
+   * Converts the argument parsed for this flag instance into the given type
+   * using the type matched conversion function ::argagg::convert::arg(). If
+   * there was not an argument parsed for this flag instance then a
+   * std::invalid_argument exception is thrown.
    */
   template <typename T>
-  T as(std::size_t i = 0) const
+  T as() const
   {
-    return convert::arg<T>(this->args[i]);
+    return this->all.back().as<T>();
   }
 
   /**
    * @brief
-   * Gets all positional arguments converted to the given type.
+   * Converts the argument parsed for this flag instance into the given type
+   * using the type matched conversion function ::argagg::convert::arg(). If
+   * there was not an argument parsed for this flag instance then the provided
+   * default value is returned instead.
    */
   template <typename T>
-  std::vector<T> all_as() const
+  T as(const T& t) const
   {
-    std::vector<T> v(this->args.size());
-    std::transform(
-      this->args.begin(), this->args.end(), v.begin(),
-      [](const char* arg) {
-        return convert::arg<T>(arg);
-      });
-    return v;
+    if (this->all.size() == 0) {
+      return t;
+    }
+    return this->all.back().as<T>(t);
   }
+
+  /**
+   * @brief
+   * Since we have the flag::as() API we might as well alias it as an implicit
+   * conversion operator. This performs implicit conversion using the as()
+   * method.
+   */
+  template <typename T>
+  operator T () const
+  {
+    return this->as<T>();
+  }
+
+  /**
+   * @brief
+   * Implicit boolean conversion function which returns true if there is at
+   * least one parser result for this flag_spec.
+   */
+  operator bool () const
+  {
+    return this->all.size() > 0;
+  }
+
+};
+
+
+/**
+ * @brief
+ * Represents all results of the parser including flags and positional
+ * arguments.
+ */
+struct result {
 
   /**
    * @brief
@@ -226,16 +268,114 @@ struct args {
 
   /**
    * @brief
-   * Maps from flag name to the structure which contains the parser results for
-   * that flag.
+   * Maps from flag_spec name to the structure which contains the parser
+   * results for that flag_spec.
    */
-  std::unordered_map<std::string, flag> flags;
+  std::unordered_map<std::string, ::argagg::flags> flags;
 
   /**
    * @brief
    * Vector of positional arguments.
    */
-  std::vector<const char*> args;
+  std::vector<const char*> pos;
+
+  /**
+   * @brief
+   * Used to check if a flag_spec was specified at all.
+   */
+  bool has_flag(const std::string& name) const
+  {
+    const auto it = this->flags.find(name);
+    return ( it != this->flags.end()) && it->second.all.size() > 0;
+  }
+
+  /**
+   * @brief
+   * Get the parser results for the given flag_spec. If the flag_spec never
+   * showed up then the exception from the unordered_map access will bubble
+   * through so check if the flag exists in the first place with has_flag().
+   */
+  ::argagg::flags& operator [] (const std::string& name)
+  {
+    return this->flags.at(name);
+  }
+
+  /**
+   * @brief
+   * Get the parser results for the given flag_spec. If the flag_spec never
+   * showed up then the exception from the unordered_map access will bubble
+   * through so check if the flag exists in the first place with has_flag().
+   */
+  const ::argagg::flags& operator [] (const std::string& name) const
+  {
+    return this->flags.at(name);
+  }
+
+  /**
+   * @brief
+   * Get the parser results for the given flag_spec. If the flag_spec never
+   * showed up then the exception from the unordered_map access will bubble
+   * through so check if the flag exists in the first place with has_flag().
+   */
+  ::argagg::flags& operator [] (const char* name)
+  {
+    return this->flags.at(std::string(name));
+  }
+
+  /**
+   * @brief
+   * Get the parser results for the given flag_spec. If the flag_spec never
+   * showed up then the exception from the unordered_map access will bubble
+   * through so check if the flag exists in the first place with has_flag().
+   */
+  const ::argagg::flags& operator [] (const char* name) const
+  {
+    return this->flags.at(std::string(name));
+  }
+
+  /**
+   * @brief
+   * Gets the number of positional arguments.
+   */
+  std::size_t count() const
+  {
+    return this->pos.size();
+  }
+
+  /**
+   * @brief
+   * Gets a positional argument by index.
+   */
+  const char* operator [] (std::size_t index) const
+  {
+    return this->pos[index];
+  }
+
+  /**
+   * @brief
+   * Gets a positional argument converted to the given type.
+   */
+  template <typename T>
+  T as(std::size_t i = 0) const
+  {
+    return convert::arg<T>(this->pos[i]);
+  }
+
+  /**
+   * @brief
+   * Gets all positional arguments converted to the given type.
+   */
+  template <typename T>
+  std::vector<T> all_as() const
+  {
+    std::vector<T> v(this->pos.size());
+    std::transform(
+      this->pos.begin(), this->pos.end(), v.begin(),
+      [](const char* arg) {
+        return convert::arg<T>(arg);
+      });
+    return v;
+  }
 
 };
 
@@ -268,34 +408,17 @@ struct flag_spec {
 
   /**
    * @brief
-   * Number of arguments this flag requires. A positive number means this flag
-   * explicitly requires exactly that many arguments. Use 0 for flags that
-   * require no arguments. Negative numbers are undefined except for the
-   * flag_spec::zero_plus, flag_spec::one_plus, and flag_spec::optional values.
+   * Number of arguments this flag requires. Must be 0, 1, or
+   * flag_spec::optional. All other values have undefined behavior.
    */
-  int num_args;
-
-  /**
-   * @brief
-   * A sentinel value that num_args can be set to. When used it means that this
-   * flag expects zero or more arguments.
-   */
-  constexpr static int zero_plus = -1;
-
-  /**
-   * @brief
-   * A sentinel value that num_args can be set to. When used it means that this
-   * flag expects one or more arguments and causes a parse failure when no
-   * arguments are provided to the flag.
-   */
-  constexpr static int one_plus = -2;
+  char num_args;
 
   /**
    * @brief
    * A sentinal value that num_args can be set to. When used it means that this
    * flag expects zero or one arguments.
    */
-  constexpr static int optional = -3;
+  constexpr static int optional = -1;
 
 };
 
@@ -311,13 +434,19 @@ struct parser {
    * Parses the provided command line arguments and returns the args result
    * structure.
    */
-  args parse(int argc, const char** argv)
+  ::argagg::result parse(int argc, const char** argv)
   {
     bool ignore_flags = false;
     flag* last_flag_expecting_args = nullptr;
-    int num_flag_args_to_consume = 0;
+    char num_flag_args_to_consume = 0;
 
-    args arg_res { argv[0], {}, {} };
+    result arg_res { argv[0], {}, {} };
+
+    // Add a result for each flag_spec.
+    for (auto& spec : this->specs) {
+      ::argagg::flags x {{}};
+      arg_res.flags.insert(std::make_pair(spec.name, x));
+    }
 
     const char** arg_i = argv + 1;
     const char** arg_end = argv + argc;
@@ -350,12 +479,13 @@ struct parser {
 
           if (arg_i_str[1] == '-' && arg_i_str[2] == '\0') {
             // If the argument is "--" then that means treat the rest of the
-            // arguments are positional arguments.
+            // arguments as positional arguments.
             ignore_flags = true;
 
           } else {
             // If we get a flag and it isn't one that was specified nor "--"
             // then this is an error.
+            // TODO (vnguyen): Add the offending flag to the exception text.
             throw unexpected_flag_error("found unused flag");
           }
 
@@ -363,56 +493,28 @@ struct parser {
           // If we get an argument and the last flag is expecting some specific
           // positive number of arguments then give this positional argument to
           // that flag.
-          last_flag_expecting_args->args.push_back(*arg_i);
+          last_flag_expecting_args->arg = *arg_i;
           --num_flag_args_to_consume;
-
-        } else if (num_flag_args_to_consume == flag_spec::zero_plus) {
-          // If we get an argument and the last flag wants as many (or zero)
-          // arguments as it can get then give this positional argument to that
-          // flag and stay in this mode.
-          last_flag_expecting_args->args.push_back(*arg_i);
-
-        } else if (num_flag_args_to_consume == flag_spec::one_plus) {
-          // If we get an argument and the last flag wants as many (but at
-          // least one) arguments as it can get then give this positional
-          // argument to that flag but go into the mode where we was as many or
-          // zero arguments because that "at least one" we wanted has been
-          // satisfied.
-          last_flag_expecting_args->args.push_back(*arg_i);
-          num_flag_args_to_consume = flag_spec::zero_plus;
 
         } else if (num_flag_args_to_consume == flag_spec::optional) {
           // If we get an argument and the last flag expects zero or one
           // arguments then give this positional argument to the flag and
           // change mode so that we aren't expecting anymore flag arguments.
-          last_flag_expecting_args->args.push_back(*arg_i);
+          last_flag_expecting_args->arg = *arg_i;
           num_flag_args_to_consume = 0;
 
         } else {
           // If there are no expectations for flag arguments then simply use
           // this argument as a positional argument.
-          arg_res.args.push_back(*arg_i);
+          arg_res.pos.push_back(*arg_i);
 
         }
       } else {
         // If we found a flag that was specified...
 
         if (num_flag_args_to_consume > 0) {
-          // If we get a known flag but are expecting arguments for a previous
-          // flag then throw an error.
-          throw unexpected_flag_error(
-            "expected arguments for previous flag but got another flag");
-
-        } else if (num_flag_args_to_consume == flag_spec::zero_plus) {
-          // If we get a known flag but are expecting as many (or zero)
-          // arguments for the last flag then simply reset the number of
-          // expected flag arguments.
-          num_flag_args_to_consume = 0;
-
-        } else if (num_flag_args_to_consume == flag_spec::one_plus) {
-          // If we get a known flag but are still expecting at least one or
-          // more arguments for the last flag then we haven't found "at least
-          // one" argument for the last flag. This is an error.
+          // If we get a known flag but are expecting an argument for a
+          // previous flag then throw an error.
           throw unexpected_flag_error(
             "expected arguments for previous flag but got another flag");
 
@@ -423,24 +525,18 @@ struct parser {
           num_flag_args_to_consume = 0;
         }
 
+        // Get the flag results.
         auto& spec = *matching_flag;
+        flags& flags_i = arg_res.flags[spec.name];
 
-        // If this flag_spec has not been added before then do that now.
-        if (!arg_res.has_flag(spec.name)) {
-          flag new_flag {0, {}};
-          arg_res.flags.emplace(
-            std::make_pair(spec.name, std::move(new_flag)));
-        }
-
-        flag& flag_i = arg_res.flags[spec.name];
-
-        // Increment the number of occurences of this flag
-        ++flag_i.occurences;
+        // Add a single flag result to flag results.
+        flag flag_i {nullptr};
+        flags_i.all.push_back(std::move(flag_i));
 
         // If this flag expects arguments then put our parser into the
         // corresponding "expected flag arguments" mode.
         if (spec.num_args != 0) {
-          last_flag_expecting_args = &flag_i;
+          last_flag_expecting_args = &(flags_i.all.back());
           num_flag_args_to_consume = spec.num_args;
         }
       }
@@ -452,10 +548,10 @@ struct parser {
     // If we're done with all of the arguments but are still expecting
     // arguments for a previous flag then we haven't satisfied that flag. This
     // is an error.
-    if (num_flag_args_to_consume > 0 ||
-        num_flag_args_to_consume == flag_spec::one_plus) {
+    if (num_flag_args_to_consume > 0) {
+      // TODO (vnguyen): Print which flag is expect an argument.
       throw std::out_of_range(
-        "flag expected arguments but there are no more arguments");
+        "flag expected an argument but there are no more arguments");
     }
 
     return arg_res;
@@ -513,6 +609,12 @@ namespace convert {
   double arg(const char* arg)
   {
     return std::atof(arg);
+  }
+
+  template <>
+  const char* arg(const char* arg)
+  {
+    return arg;
   }
 
   template <>

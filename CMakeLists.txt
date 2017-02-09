@@ -63,9 +63,9 @@ install(
 
 # Build examples if configured to.
 if( ARGAGG_BUILD_EXAMPLES )
-  add_executable( argagg_joinargs "examples/joinargs.cpp" )
+  add_executable( joinargs "examples/joinargs.cpp" )
   set_target_properties(
-    argagg_joinargs
+    joinargs
     PROPERTIES
       COMPILE_FLAGS "${ARGAGG_TEST_COMPILE_FLAGS}"
       INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"

@@ -1,10 +1,44 @@
 #include "../include/argagg/argagg.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "./doctest/doctest.h"
+#include "doctest.h"
 
 #include <iostream>
 #include <vector>
+
+
+TEST_CASE("intro example")
+{
+  argagg::parser argparser {{
+      { "help", {"-h", "--help"},
+        "shows this help message", 0},
+      { "delim", {"-d", "--delim"},
+        "delimiter (default: ,)", 1},
+      { "num", {"-n", "--num"},
+        "number", 1},
+    }};
+  std::vector<const char*> argv {
+    "test", "foo", "-h", "bar", "baz", "-n", "100", "-d", "--", "-"};
+  argagg::parser_results args;
+  try {
+    args = argparser.parse(argv.size(), &(argv.front()));
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << std::endl;
+  }
+  CHECK(args.has_option("help") == true);
+  CHECK(static_cast<bool>(args["help"]) == true);
+  CHECK(args.has_option("delim") == true);
+  CHECK(static_cast<bool>(args["delim"]) == true);
+  auto delim = args["delim"].as<std::string>(",");
+  CHECK(delim == "-");
+  CHECK(args.has_option("num") == true);
+  CHECK(static_cast<bool>(args["num"]) == true);
+  int x = 0;
+  if (args["num"]) {
+    x = args["num"];
+  }
+  CHECK(x == 100);
+}
 
 
 TEST_CASE("no specification, no arguments")

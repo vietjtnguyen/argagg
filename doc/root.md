@@ -12,7 +12,7 @@ To use just create an argagg::parser object. However, the struct doesn't provide
           "delimiter (default: ,)", 1},
         { "num", {"-n", "--num"},
           "number", 1},
-      }}
+      }};
 
 An option is specified by four things: the name of the option, the strings that activate the option (flags), the option's help message, and the number of arguments the option expects.
 
@@ -21,7 +21,7 @@ With the parser defined you actually parse the arguments by calling the argagg::
     argagg::parser_results args;
     try {
       args = argparser.parse(argc, argv);
-    } except (const std::exception& e) {
+    } catch (const std::exception& e) {
       std::cerr << e.what() << std::endl;
       return EXIT_FAILURE;
     }
@@ -68,5 +68,7 @@ If you don't mind being implicit an implicit conversion operator is provided all
     }
 
 Finally, you can get all of the positional arguments as an std::vector using the argagg::parser_results::pos member.
+
+One can also specify `--` on the command line in order to treat all following arguments as not options.
 
 For a more detailed treatment take a look at the examples or test cases.

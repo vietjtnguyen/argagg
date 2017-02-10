@@ -21,15 +21,26 @@ int main(
 
   // Use an initializer list to define the argument parser. The first brace
   // starts the initializer list, the second brace starts the initializer list
-  // for the `specs` vector in the `argagg::parser` struct.
+  // for the definitions vector in the argagg::parser struct.
   parser argparser {{
+
       // Each entry here is an initializer list for an `argagg::definition`
-      // struct. The struct entities are the name of the flag, a vector/list of
-      // strings that when matched will match this flag, the help string, and
-      // the number of arguments this flag needs.
+      // struct.
       {
-        "help", {"-h", "--help"},
-        "displays help information", 0},
+        // Name of the option. This is the key used to retrieve the flag parser
+        // results.
+        "help",
+
+        // The strings ("flags") that must be matched to activate this option.
+        {"-h", "--help"},
+
+        // The help string that is streamed out when the argagg::parser object
+        // itself is streamed out.
+        "displays help information",
+
+        // Number of arguments needed by this option. Should be 0, 1, or
+        // argagg::optional.
+        0},
       {
         "verbose", {"-v", "--verbose"},
         "increases verbosity", 0},

@@ -1,5 +1,5 @@
 Name:           argagg
-Version:        0.1.3
+Version:        0.2.1
 Release:        1%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
@@ -14,10 +14,10 @@ BuildRequires:  doxygen
 This is yet another C++ command line argument/option parser. It was written as
 a simple and idiomatic alternative to other frameworks like getopt, Boost
 program options, TCLAP, and others. The goal is to achieve the majority of
-argument parsing needs in a very simple manner (simple mental model) and easy
-to use API. It operates as a single pass over all arguments, recognizing flags
-prepended by `-` (short) or `--` (long) and aggregating them into easy to
-access structures.
+argument parsing needs in a simple manner with an easy to use API. It operates
+as a single pass over all arguments, recognizing flags prefixed by `-` (short)
+or `--` (long) and aggregating them into easy to access structures with lots of
+convenience functions.
 
 %package        devel
 Summary:        Development files for %{name}
@@ -47,6 +47,9 @@ ctest -V %{?_smp_mflags}
 %{_includedir}/*
 
 %changelog
+* Fri Feb 10 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
+- Packaged version 0.2.1
+
 * Mon Jan 30 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
 - Added missing files specification for empty parent package
 

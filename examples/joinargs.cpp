@@ -68,30 +68,56 @@ int main(
     return EXIT_SUCCESS;
   }
 
+  // Respect verbosity. Okay, the logging here is a little ludicrous. The point
+  // I want to show here is that you can quickly get the number of times an
+  // option shows up.
+  int verbose_level = args["verbose"].count();
+
+  // Set up our verbose log output stream selector that selects stderr if the
+  // requested log level is lower than or equal to the currently set verbose
+  // level.
+  ofstream dev_null;
+  dev_null.open("/dev/null"); // portable? eh... simple? yes!
+  auto vlog = [&](int level) -> ostream& {
+      return verbose_level >= level ? cerr : dev_null;
+    };
+
+  vlog(1) << "verbose log level: " << verbose_level << endl;
+
   // Use comma as the separator unless one was specified.
   auto sep = args["sep"].as<string>(",");
+  vlog(1) << "set separator to '" << sep << "'" << endl;
 
   // Determine output stream.
   ofstream output_file;
   ostream* output = &std::cout;
   if (args["output"]) {
-    output_file.open(args["output"].as<string>());
+    string filename = args["output"];
+    output_file.open(filename);
     output = &output_file;
+    vlog(1) << "outputting to file at '" << filename << "'" << endl;
+  } else {
+    vlog(1) << "outputting to stdout" << endl;
   }
 
   // Join the arguments.
   if (args.count() < 1) {
-    cerr << usage.str() << argparser << endl
-         << "Not enough arguments" << endl;
+    vlog(0) << usage.str() << argparser << endl
+            << "Not enough arguments" << endl;
     return EXIT_FAILURE;
   }
   for (auto& arg : args.pos) {
+    vlog(2) << "writing argument" << endl;
+    vlog(4) << "argument is '" << arg << "'" << endl;
     *output << arg;
     if (arg != args.pos.back()) {
+      vlog(3) << "writing separator" << endl;
       *output << sep;
     }
   }
+  vlog(4) << "writing endl" << endl;
   *output << endl;
 
+  vlog(4) << "everything a-okay" << endl;
   return EXIT_SUCCESS;  
 }

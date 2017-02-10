@@ -49,8 +49,12 @@ You can check if an option shows up in the command line arguments by accessing t
 ```cpp
 if (args["help"]) {
   std::cerr << argparser;
-  //    -h, --help
-  //        shows this help message
+  //     -h, --help
+  //         shows this help message
+  //     -d, --delim
+  //         delimiter (default: ,)
+  //     -n, --num
+  //         number
   return EXIT_SUCCESS;
 }
 ```
@@ -64,6 +68,10 @@ if (args["help"]) {
   // Usage: program [options] ARG1 ARG2
   //     -h, --help
   //         shows this help message
+  //     -d, --delim
+  //         delimiter (default: ,)
+  //     -n, --num
+  //         number
   return EXIT_SUCCESS;
 }
 ```

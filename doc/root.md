@@ -30,8 +30,12 @@ You can check if an option shows up in the command line arguments by accessing t
 
     if (args["help"]) {
       std::cerr << argparser;
-      //    -h, --help
-      //        shows this help message
+      //     -h, --help
+      //         shows this help message
+      //     -d, --delim
+      //         delimiter (default: ,)
+      //     -n, --num
+      //         number
       return EXIT_SUCCESS;
     }
 
@@ -43,6 +47,10 @@ That help message is only for the flags. If you want a usage message it's up to 
       // Usage: program [options] ARG1 ARG2
       //     -h, --help
       //         shows this help message
+      //     -d, --delim
+      //         delimiter (default: ,)
+      //     -n, --num
+      //         number
       return EXIT_SUCCESS;
     }
 

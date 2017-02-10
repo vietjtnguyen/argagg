@@ -32,7 +32,7 @@ argagg::parser argparser {{
 
 An option is specified by four things: the name of the option, the strings that activate the option (flags), the option's help message, and the number of arguments the option expects.
 
-With the parser defined you actually parse the arguments by calling the `argagg::parser::parse()` method. If there are any problems then either an `argagg::option_lacks_argument_error` or `argagg::unexpected_flag_error` exception.
+With the parser defined you actually parse the arguments by calling the `argagg::parser::parse()` method. If there are any problems then either an `argagg::option_lacks_argument_error` or `argagg::unexpected_option_error` exception.
 
 ```cpp
 argagg::parser_results args;

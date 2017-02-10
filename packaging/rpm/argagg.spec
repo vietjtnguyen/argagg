@@ -1,6 +1,6 @@
 Name:           argagg
 Version:        0.2.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
 License:        Proprietary
@@ -27,6 +27,14 @@ Requires:       %{name}%{?_isa} = %{version}-%{release}
 The %{name}-devel package contains the header files for developing applications
 that use %{name}.
 
+%package        doc
+Summary:        Developer documentation for %{name}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+
+%description    doc
+The %{name}-devel package contains the deeloper documentation for developing
+applications that use %{name}.
+
 %prep
 %setup -q
 
@@ -43,10 +51,15 @@ ctest -V %{?_smp_mflags}
 %files
 
 %files devel
-%doc %{_datadir}/doc/%{name}
 %{_includedir}/*
 
+%files doc
+%doc %{_datadir}/doc/%{name}
+
 %changelog
+* Fri Feb 10 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
+- Separated documentation into a separate package
+
 * Fri Feb 10 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
 - Packaged version 0.2.1
 

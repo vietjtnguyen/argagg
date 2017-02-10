@@ -1,3 +1,44 @@
+0.2.2
+-----
+
+- Actually tried compiled introduction example code
+  - Fixed bugs in the intro example code
+  - Added it to test cases
+- More detailed comments in the joinargs example
+- Separated documentation from devel subpackage into doc subpackage in RPM spec
+
+0.2.1
+-----
+
+- Minor documentation fix, listed incorrect exception
+
+0.2.0
+-----
+
+- Redesigned API, removed multiple flag args
+- Redesigned naming scheme, options instead of flags. Struct names are now
+  clearer, realized the "flags" were actually options
+  - argagg::flag is now argagg::option_result
+  - argagg::flags is now argagg::option_results
+  - argagg::result is now argagg::parser_results
+		- Renamed args field to pos
+  - argagg::flag_spec is now argagg::definition
+- Flags can now only have zero, one, or an optional argument
+	- Moved argagg::flag_spec::optional to argagg::optional
+- Added argagg::option_results which represents multiple flag parse results for
+  the parent argagg:definition
+- Added implicit boolean conversion for argagg::option_results which represents
+  whether or not the parent argagg::definition was found at all
+- Added implicit boolean conversion for argagg::option_result which represents
+  whether or not that single flag has an argument
+- Added implicit type conversions for argagg::flag using the same
+  argagg::convert::arg() system
+- Updated tests and examples accordingly
+- Renamed argagg_joinargs make target to just joinargs
+- Removed old Doxygen style.css
+- Added option_lacks_argument_error exception class
+- Added associated flag to exception error messages
+
 0.1.3
 -----
 

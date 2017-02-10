@@ -1,5 +1,5 @@
 Name:           argagg
-Version:        0.2.1
+Version:        0.2.2
 Release:        2%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
@@ -57,6 +57,9 @@ ctest -V %{?_smp_mflags}
 %doc %{_datadir}/doc/%{name}
 
 %changelog
+* Sat Feb 11 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
+- Updated version to 0.2.2
+
 * Fri Feb 10 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
 - Separated documentation into a separate package
 

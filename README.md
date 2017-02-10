@@ -6,7 +6,7 @@ Argument Aggregator
 | `master` | ![Build Status](https://api.travis-ci.org/vietjtnguyen/argagg.svg?branch=master) |
 | `dev` | ![Build Status](https://api.travis-ci.org/vietjtnguyen/argagg.svg?branch=dev) |
 
-This is yet another C++ command line argument/option parser. It was written as a simple and idiomatic alternative to other frameworks like [getopt][], [Boost program options][], [TCLAP][], and others. The goal is to achieve the majority of argument parsing needs in a very simple manner (simple mental model) and easy to use API. It operates as a single pass over all arguments, recognizing flags prepended by `-` (short) or `--` (long) and aggregating them into easy to access structures with lots of convenience functions.
+This is yet another C++ command line argument/option parser. It was written as a simple and idiomatic alternative to other frameworks like [getopt][], [Boost program options][], [TCLAP][], and others. The goal is to achieve the majority of argument parsing needs in a simple manner with an easy to use API. It operates as a single pass over all arguments, recognizing flags prefixed by `-` (short) or `--` (long) and aggregating them into easy to access structures with lots of convenience functions.
 
 [getopt]: https://www.gnu.org/software/libc/manual/html_node/Getopt.html#Getopt
 [Boost program options]: http://www.boost.org/doc/libs/release/libs/program_options/
@@ -15,23 +15,27 @@ This is yet another C++ command line argument/option parser. It was written as a
 Introduction
 ------------
 
-To use just create an `argagg::parser` object. However, the struct doesn't provide any explicit methods for defining flags. Instead we define the flags using initialization lists.
+To use just create an `argagg::parser` object. The struct doesn't provide any explicit methods for defining options. Instead we define the options using [initialization lists][].
+
+[initialization lists]: http://en.cppreference.com/w/cpp/language/list_initialization
 
 ```cpp
 argagg::parser argparser {{
     { "help", {"-h", "--help"},
       "shows this help message", 0},
     { "delim", {"-d", "--delim"},
-      "delimiter (default: ,)", argagg::flag_spec::optional},
+      "delimiter (default: ,)", 1},
+    { "num", {"-n", "--num"},
+      "number", 1},
   }}
 ```
 
-A flag is specified by four things: the name of the flag, the strings that activate the flag, the flag's help message, and the number of arguments the flag expects.
+An option is specified by four things: the name of the option, the strings that activate the option (flags), the option's help message, and the number of arguments the option expects.
 
-With the parser defined you actually parse the arguments by calling the `argagg::parser::parse()` method. If there are any problems then either a `std::out_of_range` or `argagg::unexpected_flag_error` exception.
+With the parser defined you actually parse the arguments by calling the `argagg::parser::parse()` method. If there are any problems then either an `argagg::option_lacks_argument_error` or `argagg::unexpected_flag_error` exception.
 
 ```cpp
-argagg::result args;
+argagg::parser_results args;
 try {
   args = argparser.parse(argc, argv);
 } except (const std::exception& e) {
@@ -40,18 +44,7 @@ try {
 }
 ```
 
-You can check if a flag shows up in the arguments using the `argagg::results::has_flag()` method and giving it the flag name (not the flag text itself). You can write out some simplistic flag help message but streaming the `argagg::parser` instance itself.
-
-```cpp
-if (args.has_flag("help")) {
-  std::cerr << argparser;
-  //    -h, --help
-  //        shows this help message
-  return EXIT_SUCCESS;
-}
-```
-
-There's also an implicit boolean conversion you can use.
+You can check if an option shows up in the command line arguments by accessing the option by name from the parser results and using the implicit boolean conversion. You can write out a simplistic option help message by streaming the `argagg::parser` instance itself.
 
 ```cpp
 if (args["help"]) {
@@ -77,13 +70,22 @@ if (args["help"]) {
 
 Generally `argagg` tries to do a minimal amount of work to leave most of the control with the user.
 
-If you want to get a flag argument but fallback on a default value if it doesn't exist then you can use the `argagg::flags::as()` API but providing a default value.
+If you want to get an option argument but fallback on a default value if it doesn't exist then you can use the `argagg::option_results::as()` API and providing a default value.
 
 ```cpp
 auto delim = args["delim"].as<std::string>(",");
 ```
 
-Finally, you can get all of the positional arguments as an `std::vector` using the `argagg::results::pos` member.
+If you don't mind being implicit an implicit conversion operator is provided allowing you to write simple assignments.
+
+```cpp
+int x = 0;
+if (args["num"]) {
+  x = args["num"];
+}
+```
+
+Finally, you can get all of the positional arguments as an `std::vector` using the `argagg::parser_results::pos` member.
 
 For a more detailed treatment take a look at the [examples](./examples) or [test cases](./test).
 

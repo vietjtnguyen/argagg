@@ -9,8 +9,7 @@ int main(
   int argc,
   const char** argv)
 {
-  using argagg::result;
-  using argagg::flag_spec;
+  using argagg::parser_results;
   using argagg::parser;
   using std::cerr;
   using std::cout;
@@ -24,7 +23,7 @@ int main(
   // starts the initializer list, the second brace starts the initializer list
   // for the `specs` vector in the `argagg::parser` struct.
   parser argparser {{
-      // Each entry here is an initializer list for an `argagg::flag_spec`
+      // Each entry here is an initializer list for an `argagg::definition`
       // struct. The struct entities are the name of the flag, a vector/list of
       // strings that when matched will match this flag, the help string, and
       // the number of arguments this flag needs.
@@ -36,7 +35,7 @@ int main(
         "increases verbosity", 0},
       {
         "sep", {"-s", "--sep"},
-        "separator (default ',')", flag_spec::optional},
+        "separator (default ',')", argagg::optional},
       {
         "output", {"-o", "--output"},
         "output filename (stdout if not specified)", 1},
@@ -52,7 +51,7 @@ int main(
 
   // Use our argument parser to... parse the command line arguments. If there
   // are any problems then just spit out the usage and help text and exit.
-  argagg::result args;
+  argagg::parser_results args;
   try {
     args = argparser.parse(argc, argv);
   } catch (const std::exception& e) {

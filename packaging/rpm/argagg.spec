@@ -3,7 +3,7 @@ Version:        0.2.2
 Release:        2%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
-License:        Proprietary
+License:        MIT
 URL:            https://github.com/vietjtnguyen/argagg/
 Source0:        https://github.com/vietjtnguyen/argagg/archive/%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
@@ -32,7 +32,7 @@ Summary:        Developer documentation for %{name}
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    doc
-The %{name}-devel package contains the deeloper documentation for developing
+The %{name}-devel package contains the documentation for developing
 applications that use %{name}.
 
 %prep
@@ -57,6 +57,9 @@ ctest -V %{?_smp_mflags}
 %doc %{_datadir}/doc/%{name}
 
 %changelog
+* Mon Feb 13 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
+- Fixed License field and doc subpackage description typo
+
 * Sat Feb 11 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
 - Updated version to 0.2.2
 

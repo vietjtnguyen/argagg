@@ -16,7 +16,7 @@ To use just create an argagg::parser object. However, the struct doesn't provide
 
 An option is specified by four things: the name of the option, the strings that activate the option (flags), the option's help message, and the number of arguments the option expects.
 
-With the parser defined you actually parse the arguments by calling the argagg::parser::parse() method. If there are any problems then either an argagg::option_lacks_argument_error or argagg::unexpected_option_error exception.
+With the parser defined you actually parse the arguments by calling the argagg::parser::parse() method. If there are any problems then either an argagg::option_lacks_argument_error or argagg::unexpected_option_error exception are thrown.
 
     argagg::parser_results args;
     try {
@@ -56,7 +56,7 @@ That help message is only for the flags. If you want a usage message it's up to 
 
 Generally argagg tries to do a minimal amount of work to leave most of the control with the user.
 
-If you want to get an option argument but fallback on a default value if it doesn't exist then you can use the argagg::option_results::as() API and providing a default value.
+If you want to get an option argument but fallback on a default value if it doesn't exist then you can use the argagg::option_results::as() API and provide a default value.
 
     auto delim = args["delim"].as<std::string>(",");
 
@@ -67,7 +67,12 @@ If you don't mind being implicit an implicit conversion operator is provided all
       x = args["num"];
     }
 
-Finally, you can get all of the positional arguments as an std::vector using the argagg::parser_results::pos member.
+Finally, you can get all of the positional arguments as an std::vector using the argagg::parser_results::pos member. You can alternatively convert individual positional arguments using the same conversion functions as the option argument conversion methods.
+
+    auto y = 0.0;
+    if (args.pos.size() > 0) {
+      y = args.as<double>(0);
+    }
 
 One can also specify `--` on the command line in order to treat all following arguments as not options.
 

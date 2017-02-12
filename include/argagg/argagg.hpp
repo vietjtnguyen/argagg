@@ -80,7 +80,8 @@
  * will parse into three distinct argagg::option_result instances, but all of
  * them correspond to the same argagg::definition. We aggregate these into the
  * argagg::option_results struct which represents "all parser results for a
- * given option definition".
+ * given option definition". This argagg::option_results is basically a
+ * std::vector of argagg::option_result.
  *
  * Options aren't the only thing parsed though. Positional arguments are also
  * parsed. Thus a parser produces a result that contains both option results
@@ -116,9 +117,9 @@ struct unexpected_option_error
 
 /**
  * @brief
- * This exception is thrown when an option is parsed unexpectedly such as when
- * an argument was expected for a previous option or if an option was found
- * that has not been defined.
+ * This exception is thrown when an option requires an argument but is not
+ * provided one. This can happen if another flag was found after the option or
+ * if we simply reach the end of the command line arguments.
  */
 struct option_lacks_argument_error
 : public std::invalid_argument {
@@ -166,7 +167,8 @@ struct option_result {
 
   /**
    * @brief
-   * Argument parsed for this single option.
+   * Argument parsed for this single option. If no argument was parsed this
+   * will be set to nullptr.
    */
   const char* arg;
 
@@ -239,7 +241,7 @@ struct option_result {
  * parsed for a given definition. In that case it will simply be empty.
  *
  * To check if the associated option showed up at all simply use the implicit
- * boolean conversion.
+ * boolean conversion or check if count() is greater than zero.
  */
 struct option_results {
 
@@ -345,7 +347,8 @@ struct parser_results {
 
   /**
    * @brief
-   * Returns the name of the program from the original arguments list.
+   * Returns the name of the program from the original arguments list. This is
+   * always the first argument.
    */
   const char* program;
 
@@ -392,28 +395,6 @@ struct parser_results {
   const ::argagg::option_results& operator [] (const std::string& name) const
   {
     return this->options.at(name);
-  }
-
-  /**
-   * @brief
-   * Get the parser results for the given definition. If the definition never
-   * showed up then the exception from the unordered_map access will bubble
-   * through so check if the flag exists in the first place with has_option().
-   */
-  ::argagg::option_results& operator [] (const char* name)
-  {
-    return this->options.at(std::string(name));
-  }
-
-  /**
-   * @brief
-   * Get the parser results for the given definition. If the definition never
-   * showed up then the exception from the unordered_map access will bubble
-   * through so check if the flag exists in the first place with has_option().
-   */
-  const ::argagg::option_results& operator [] (const char* name) const
-  {
-    return this->options.at(std::string(name));
   }
 
   /**

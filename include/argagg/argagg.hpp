@@ -514,7 +514,7 @@ struct parser {
     option_result* last_option_expecting_args = nullptr;
     char num_option_args_to_consume = 0;
 
-    ::argagg::parser_results results { argv[0], {}, {} };
+    ::argagg::parser_results results { argv[0], {{}}, {} };
 
     // Add a result for each definition.
     for (auto& defn : this->definitions) {

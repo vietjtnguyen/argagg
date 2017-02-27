@@ -1,6 +1,8 @@
+%global debug_package %{nil}
+
 Name:           argagg
 Version:        0.2.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
 License:        MIT
@@ -57,6 +59,9 @@ ctest -V %{?_smp_mflags}
 %doc %{_datadir}/doc/%{name}
 
 %changelog
+* Sun Feb 19 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
+- Disabled creation of debuginfo package
+
 * Mon Feb 13 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
 - Fixed License field and doc subpackage description typo
 

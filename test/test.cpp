@@ -365,6 +365,92 @@ TEST_CASE("long flag equal format for arguments")
 }
 
 
+TEST_CASE("short flag groups")
+{
+  argagg::parser parser {{
+      {"verbose", {"-v", "--verbose"}, "be verbose", 0},
+      {"help", {"-h", "--help"}, "help", 0},
+      {"foo", {"-f", "--foo"}, "foo", 0},
+      {"output", {"-o", "--output"}, "output", 1},
+    }};
+  SUBCASE("basic") {
+    std::vector<const char*> argv {
+      "test", "-vhf", "bar"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == true);
+    CHECK(args.has_option("help") == true);
+    CHECK(args.has_option("foo") == true);
+    CHECK(args.has_option("output") == false);
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "bar");
+  }
+  SUBCASE("basic 2") {
+    std::vector<const char*> argv {
+      "test", "-fvh", "bar"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == true);
+    CHECK(args.has_option("help") == true);
+    CHECK(args.has_option("foo") == true);
+    CHECK(args.has_option("output") == false);
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "bar");
+  }
+  SUBCASE("basic 3") {
+    std::vector<const char*> argv {
+      "test", "-fh", "-v", "bar"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == true);
+    CHECK(args.has_option("help") == true);
+    CHECK(args.has_option("foo") == true);
+    CHECK(args.has_option("output") == false);
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "bar");
+  }
+  SUBCASE("basic 4") {
+    std::vector<const char*> argv {
+      "test", "--vfh", "bar"};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::unexpected_option_error);
+  }
+  SUBCASE("trailing flag with argument") {
+    std::vector<const char*> argv {
+      "test", "-vhfo", "bar"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == true);
+    CHECK(args.has_option("help") == true);
+    CHECK(args.has_option("foo") == true);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "bar");
+    CHECK(args.count() == 0);
+  }
+  SUBCASE("leading flag with argument") {
+    std::vector<const char*> argv {
+      "test", "-ohfv", "bar"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == false);
+    CHECK(args.has_option("help") == false);
+    CHECK(args.has_option("foo") == false);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "hfv");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "bar");
+  }
+  SUBCASE("middling flag with argument") {
+    std::vector<const char*> argv {
+      "test", "-vfoh", "bar"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == true);
+    CHECK(args.has_option("help") == false);
+    CHECK(args.has_option("foo") == true);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "h");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "bar");
+  }
+}
+
+
 TEST_CASE("flag stop")
 {
   argagg::parser parser {{
@@ -446,6 +532,85 @@ TEST_CASE("option requires argument")
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     }, argagg::option_lacks_argument_error);
+  }
+}
+
+
+TEST_CASE("gcc example")
+{
+  argagg::parser parser {{
+      {"verbose", {"-v", "--verbose"}, "be verbose", 0},
+      {"version", {"--version"}, "print version", 0},
+      {"include path", {"-I"}, "include path", 1},
+      {"library path", {"-L"}, "library path", 1},
+      {"library", {"-l"}, "library", 1},
+      {"output", {"-o"}, "output", 1},
+    }};
+  SUBCASE("version") {
+    std::vector<const char*> argv {
+      "gcc", "--version"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == false);
+    CHECK(args.has_option("version") == true);
+    CHECK(args.has_option("include path") == false);
+    CHECK(args.has_option("library path") == false);
+    CHECK(args.has_option("library") == false);
+    CHECK(args.has_option("output") == false);
+    CHECK(args.count() == 0);
+  }
+  SUBCASE("simple") {
+    std::vector<const char*> argv {
+      "gcc", "test.c"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == false);
+    CHECK(args.has_option("version") == false);
+    CHECK(args.has_option("include path") == false);
+    CHECK(args.has_option("library path") == false);
+    CHECK(args.has_option("library") == false);
+    CHECK(args.has_option("output") == false);
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "test.c");
+  }
+  SUBCASE("simple 2") {
+    std::vector<const char*> argv {
+      "gcc", "-I/usr/local/include", "test.c", "-otest"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == false);
+    CHECK(args.has_option("version") == false);
+    CHECK(args.has_option("include path") == true);
+    CHECK(args["include path"].count() == 1);
+    CHECK(args["include path"].as<std::string>() == "/usr/local/include");
+    CHECK(args.has_option("library path") == false);
+    CHECK(args.has_option("library") == false);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].count() == 1);
+    CHECK(args["output"].as<std::string>() == "test");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "test.c");
+  }
+  SUBCASE("simple 3") {
+    std::vector<const char*> argv {
+      "gcc", "-I/usr/local/include", "-I.", "-L/usr/local/lib", "-lz", "-lm",
+      "test.c", "-otest"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == false);
+    CHECK(args.has_option("version") == false);
+    CHECK(args.has_option("include path") == true);
+    CHECK(args["include path"].count() == 2);
+    CHECK(args["include path"][0].as<std::string>() == "/usr/local/include");
+    CHECK(args["include path"][1].as<std::string>() == ".");
+    CHECK(args.has_option("library path") == true);
+    CHECK(args["library path"].count() == 1);
+    CHECK(args["library path"][0].as<std::string>() == "/usr/local/lib");
+    CHECK(args.has_option("library") == true);
+    CHECK(args["library"].count() == 2);
+    CHECK(args["library"][0].as<std::string>() == "z");
+    CHECK(args["library"][1].as<std::string>() == "m");
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].count() == 1);
+    CHECK(args["output"].as<std::string>() == "test");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "test.c");
   }
 }
 

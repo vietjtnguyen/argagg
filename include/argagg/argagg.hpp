@@ -545,7 +545,7 @@ struct definition {
 
 /**
  * @brief
- * Checks whether or not a command-line argument should be processed as an
+ * Checks whether or not a command line argument should be processed as an
  * option flag. This is very similar to is_valid_flag_definition() but must
  * allow for short flag groups (e.g. "-abc") and equal-assigned long flag
  * arguments (e.g. "--output=foo.txt").
@@ -863,6 +863,11 @@ struct parser {
         continue;
       }
 
+      // Reset the "expecting argument" state.
+      last_flag_expecting_args = nullptr;
+      last_option_expecting_args = nullptr;
+      num_option_args_to_consume = 0;
+
       // If we're at this point then we're definitely dealing with something
       // that is flag-like and has hyphen as the first character and has a
       // length of at least two characters. How we handle this potential flag
@@ -898,10 +903,6 @@ struct parser {
               << arg_i_cstr;
           throw unexpected_argument_error(msg.str());
         }
-
-        last_flag_expecting_args = nullptr;
-        last_option_expecting_args = nullptr;
-        num_option_args_to_consume = 0;
 
         auto& opt_results = results.options[defn->name];
         option_result opt_result {nullptr};
@@ -956,21 +957,27 @@ struct parser {
         option_result opt_result {nullptr};
         opt_results.all.push_back(std::move(opt_result));
 
-        if (!defn->wants_no_arguments()) {
+        if (defn->requires_arguments()) {
 
+          // If this short flag's option requires an argument and we're the
+          // last flag in the short flag group then just put the parser into
+          // "expecting argument for last option" state and move onto the next
+          // command line argument.
           bool is_last_short_flag_in_group = (sf_idx == arg_i_len - 1);
-          if (defn->requires_arguments() && !is_last_short_flag_in_group) {
-            std::ostringstream msg;
-            msg << "found option '" << defn->name << "' as flag '"
-                << arg_i_cstr[sf_idx] << "' in flag group '" << arg_i_cstr
-                << "' but this option requires an argument and is not at "
-                    "the end of the flag group";
-            throw unexpected_option_error(msg.str());
+          if (is_last_short_flag_in_group) {
+            last_flag_expecting_args = arg_i_cstr;
+            last_option_expecting_args = &(opt_results.all.back());
+            num_option_args_to_consume = defn->num_args;
+            break;
           }
 
-          last_flag_expecting_args = arg_i_cstr;
-          last_option_expecting_args = &(opt_results.all.back());
-          num_option_args_to_consume = defn->num_args;
+          // If this short flag's option requires and argument and we're NOT
+          // the last flag in the short flag group then we automatically
+          // consume the rest of the short flag group as the argument for this
+          // flag. This is how we get the POSIX behavior of being able to
+          // specify a flag's arguments without a white space delimiter (e.g.
+          // "-I/usr/local/include").
+          opt_results.all.back().arg = arg_i_cstr + sf_idx + 1;
           break;
         }
       }

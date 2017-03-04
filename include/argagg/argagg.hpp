@@ -221,7 +221,7 @@ struct option_result {
    * @brief
    * Converts the argument parsed for this single option instance into the
    * given type using the type matched conversion function
-   * ::argagg::convert::arg(). If there was not an argument parsed for this
+   * argagg::convert::arg(). If there was not an argument parsed for this
    * single option instance then a argagg::option_lacks_argument_error
    * exception is thrown.
    */
@@ -239,7 +239,7 @@ struct option_result {
    * @brief
    * Converts the argument parsed for this single option instance into the
    * given type using the type matched conversion function
-   * ::argagg::convert::arg(). If there was not an argument parsed for this
+   * argagg::convert::arg(). If there was not an argument parsed for this
    * single option instance then the provided default value is returned
    * instead.
    */
@@ -294,7 +294,7 @@ struct option_results {
    * @brief
    * All option parse results for this option.
    */
-  std::vector<::argagg::option_result> all;
+  std::vector<option_result> all;
 
   /**
    * @brief
@@ -309,7 +309,7 @@ struct option_results {
    * @brief
    * Gets a single option parse result by index.
    */
-  ::argagg::option_result& operator [] (std::size_t index)
+  option_result& operator [] (std::size_t index)
   {
     return this->all[index];
   }
@@ -318,7 +318,7 @@ struct option_results {
    * @brief
    * Gets a single option result by index.
    */
-  const ::argagg::option_result& operator [] (std::size_t index) const
+  const option_result& operator [] (std::size_t index) const
   {
     return this->all[index];
   }
@@ -329,7 +329,7 @@ struct option_results {
    * parent definition to the provided type. For example, if this was for "-f 1
    * -f 2 -f 3" then calling this method for an integer type will return 3. If
    * there are no option parse results then a std::out_of_range exception is
-   * thrown. Any exceptions thrown by argagg::option_result::as() are not
+   * thrown. Any exceptions thrown by option_result::as() are not
    * handled.
    */
   template <typename T>
@@ -360,9 +360,9 @@ struct option_results {
 
   /**
    * @brief
-   * Since we have the argagg::option_results::as() API we might as well alias
+   * Since we have the option_results::as() API we might as well alias
    * it as an implicit conversion operator. This performs implicit conversion
-   * using the argagg::option_results::as() method.
+   * using the option_results::as() method.
    */
   template <typename T>
   operator T () const
@@ -402,7 +402,7 @@ struct parser_results {
    * Maps from definition name to the structure which contains the parser
    * results for that definition.
    */
-  std::unordered_map<std::string, ::argagg::option_results> options;
+  std::unordered_map<std::string, option_results> options;
 
   /**
    * @brief
@@ -426,7 +426,7 @@ struct parser_results {
    * showed up then the exception from the unordered_map access will bubble
    * through so check if the flag exists in the first place with has_option().
    */
-  ::argagg::option_results& operator [] (const std::string& name)
+  option_results& operator [] (const std::string& name)
   {
     return this->options.at(name);
   }
@@ -437,7 +437,7 @@ struct parser_results {
    * showed up then the exception from the unordered_map access will bubble
    * through so check if the flag exists in the first place with has_option().
    */
-  const ::argagg::option_results& operator [] (const std::string& name) const
+  const option_results& operator [] (const std::string& name) const
   {
     return this->options.at(name);
   }
@@ -504,7 +504,7 @@ struct definition {
   /**
    * @brief
    * List of strings to match that correspond to this option. Should be fully
-   * specified with dashes (e.g. "-v" or "--verbose") but this is not enforced.
+   * specified with hyphens (e.g. "-v" or "--verbose").
    */
   std::vector<const char*> flags;
 
@@ -859,7 +859,7 @@ namespace convert {
  * @brief
  * Writes the option help to the given stream.
  */
-std::ostream& operator << (std::ostream& os, const ::argagg::parser& x)
+std::ostream& operator << (std::ostream& os, const argagg::parser& x)
 {
   for (auto& definition : x.definitions) {
     os << "    ";

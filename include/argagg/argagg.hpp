@@ -723,7 +723,7 @@ struct parser {
    * This method is not thread-safe and assumes that no modifications are made
    * to the definitions member field during the extent of this method call.
    */
-  parser_results parse(int argc, const char** argv)
+  parser_results parse(int argc, const char** argv) const
   {
     // Initialize the parser results that we'll be returning. Store the program
     // name (assumed to be the first command line argument) and initialize
@@ -743,9 +743,9 @@ struct parser {
     // definition has been modified. It seems much simpler to just enforce the
     // validity when you actually want to parser because it's at the moment of
     // parsing that you know the definitions are complete.
-    std::array<definition*, 256> short_map;
+    std::array<const definition*, 256> short_map;
     std::fill(short_map.begin(), short_map.end(), nullptr);
-    std::unordered_map<std::string, definition*> long_map {};
+    std::unordered_map<std::string, const definition*> long_map {};
     for (auto& defn : this->definitions) {
 
       if (defn.flags.size() == 0) {
@@ -998,6 +998,16 @@ struct parser {
     }
 
     return results;
+  }
+
+  /**
+   * @brief
+   * Not sure why C++ won't consider going from "char**" to "const char**" as
+   * an implicitly safe operation but it doesn't so here's an overload.
+   */
+  parser_results parse(int argc, char** argv) const
+  {
+    return parse(argc, const_cast<const char**>(argv));
   }
 
 };

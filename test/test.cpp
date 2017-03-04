@@ -326,14 +326,33 @@ TEST_CASE("argument conversions")
       "test", "1", "2"};
     argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     CHECK(args.pos.size() == 2);
+    CHECK(args.as<short>() == 1);
+    CHECK(args.as<unsigned short>() == 1);
+    CHECK(args.as<signed short>() == 1);
     CHECK(args.as<int>() == 1);
+    CHECK(args.as<unsigned int>() == 1);
+    CHECK(args.as<signed int>() == 1);
     CHECK(args.as<long>() == 1);
+    CHECK(args.as<unsigned long>() == 1);
+    CHECK(args.as<signed long>() == 1);
     CHECK(args.as<long long>() == 1);
-    CHECK(args.as<std::string>() == "1");
+    CHECK(args.as<unsigned long long>() == 1);
+    CHECK(args.as<signed long long>() == 1);
+    CHECK(std::strcmp(args.as<const char*>(), "1") == 0);
+    CHECK(args.as<short>(1) == 2);
+    CHECK(args.as<unsigned short>(1) == 2);
+    CHECK(args.as<signed short>(1) == 2);
     CHECK(args.as<int>(1) == 2);
+    CHECK(args.as<unsigned int>(1) == 2);
+    CHECK(args.as<signed int>(1) == 2);
     CHECK(args.as<long>(1) == 2);
+    CHECK(args.as<unsigned long>(1) == 2);
+    CHECK(args.as<signed long>(1) == 2);
     CHECK(args.as<long long>(1) == 2);
+    CHECK(args.as<unsigned long long>(1) == 2);
+    CHECK(args.as<signed long long>(1) == 2);
     CHECK(args.as<std::string>(1) == "2");
+    CHECK(std::strcmp(args.as<const char*>(1), "2") == 0);
   }
   SUBCASE("positional floating point") {
     std::vector<const char*> argv {

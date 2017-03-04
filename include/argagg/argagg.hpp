@@ -710,34 +710,80 @@ struct parser {
 
 namespace convert {
 
-  template <>
-  int arg(const char* arg)
+  template <typename T>
+  T long_(const char* arg)
   {
-    return std::atoi(arg);
+    char* garbage = nullptr;
+    errno = 0;
+    T ret = static_cast<T>(std::strtol(arg, &garbage, 0));
+    if (errno == ERANGE) {
+      throw std::out_of_range("argument numeric value out of range");
+    }
+    return ret;
   }
 
-  template <>
-  long arg(const char* arg)
+  template <typename T>
+  T long_long_(const char* arg)
   {
-    return std::atol(arg);
+    char* garbage = nullptr;
+    errno = 0;
+    T ret = static_cast<T>(std::strtoll(arg, &garbage, 0));
+    if (errno == ERANGE) {
+      throw std::out_of_range("argument numeric value out of range");
+    }
+    return ret;
   }
 
-  template <>
-  long long arg(const char* arg)
-  {
-    return std::atoll(arg);
+#define DEFINE_CONVERSION_FROM_LONG_(TYPE) \
+  template <> \
+  TYPE arg(const char* arg) \
+  { \
+    return long_<TYPE>(arg); \
   }
+
+  DEFINE_CONVERSION_FROM_LONG_(short);
+  DEFINE_CONVERSION_FROM_LONG_(unsigned short);
+  DEFINE_CONVERSION_FROM_LONG_(int);
+  DEFINE_CONVERSION_FROM_LONG_(unsigned int);
+  DEFINE_CONVERSION_FROM_LONG_(long);
+  DEFINE_CONVERSION_FROM_LONG_(unsigned long);
+
+#undef DEFINE_CONVERSION_FROM_LONG_
+
+#define DEFINE_CONVERSION_FROM_LONG_LONG_(TYPE) \
+  template <> \
+  TYPE arg(const char* arg) \
+  { \
+    return long_long_<TYPE>(arg); \
+  }
+
+  DEFINE_CONVERSION_FROM_LONG_LONG_(long long);
+  DEFINE_CONVERSION_FROM_LONG_LONG_(unsigned long long);
+
+#undef DEFINE_CONVERSION_FROM_LONG_LONG_
 
   template <>
   float arg(const char* arg)
   {
-    return static_cast<float>(std::atof(arg));
+    char* garbage = nullptr;
+    errno = 0;
+    float ret = std::strtof(arg, &garbage);
+    if (errno == ERANGE) {
+      throw std::out_of_range("argument numeric value out of range");
+    }
+    return ret;
   }
 
   template <>
   double arg(const char* arg)
   {
-    return std::atof(arg);
+    char* garbage = nullptr;
+    errno = 0;
+    double ret = std::strtod(arg, &garbage);
+    if (errno == ERANGE) {
+      throw std::out_of_range("argument numeric value out of range");
+    }
+    return ret;
   }
 
   template <>

@@ -779,6 +779,12 @@ struct parser {
 
 namespace convert {
 
+
+  /**
+   * @brief
+   * Templated function for conversion to T using the std::strtol() function.
+   * This is used for anything long length or shorter (long, int, short, char).
+   */
   template <typename T>
   T long_(const char* arg)
   {
@@ -791,6 +797,12 @@ namespace convert {
     return ret;
   }
 
+
+  /**
+   * @brief
+   * Templated function for conversion to T using the std::strtoll() function.
+   * This is used for anything long long length or shorter (long long).
+   */
   template <typename T>
   T long_long_(const char* arg)
   {

@@ -328,6 +328,9 @@ TEST_CASE("argument conversions")
       "test", "1", "2"};
     argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     CHECK(args.pos.size() == 2);
+    CHECK(args.as<char>() == 1);
+    CHECK(args.as<unsigned char>() == 1);
+    CHECK(args.as<signed char>() == 1);
     CHECK(args.as<short>() == 1);
     CHECK(args.as<unsigned short>() == 1);
     CHECK(args.as<signed short>() == 1);
@@ -341,6 +344,9 @@ TEST_CASE("argument conversions")
     CHECK(args.as<unsigned long long>() == 1);
     CHECK(args.as<signed long long>() == 1);
     CHECK(std::strcmp(args.as<const char*>(), "1") == 0);
+    CHECK(args.as<char>(1) == 2);
+    CHECK(args.as<unsigned char>(1) == 2);
+    CHECK(args.as<signed char>(1) == 2);
     CHECK(args.as<short>(1) == 2);
     CHECK(args.as<unsigned short>(1) == 2);
     CHECK(args.as<signed short>(1) == 2);
@@ -384,9 +390,21 @@ TEST_CASE("argument conversions")
     argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     CHECK(args.has_option("number") == true);
     CHECK(args["number"].count() == 1);
+    CHECK(args["number"].as<char>() == 1);
+    CHECK(args["number"].as<unsigned char>() == 1);
+    CHECK(args["number"].as<signed char>() == 1);
+    CHECK(args["number"].as<short>() == 1);
+    CHECK(args["number"].as<unsigned short>() == 1);
+    CHECK(args["number"].as<signed short>() == 1);
     CHECK(args["number"].as<int>() == 1);
+    CHECK(args["number"].as<unsigned int>() == 1);
+    CHECK(args["number"].as<signed int>() == 1);
     CHECK(args["number"].as<long>() == 1);
+    CHECK(args["number"].as<unsigned long>() == 1);
+    CHECK(args["number"].as<signed long>() == 1);
     CHECK(args["number"].as<long long>() == 1);
+    CHECK(args["number"].as<unsigned long long>() == 1);
+    CHECK(args["number"].as<signed long long>() == 1);
     CHECK(args["number"].as<std::string>() == "1");
   }
   SUBCASE("option floating point") {
@@ -413,6 +431,7 @@ TEST_CASE("argument conversions")
 }
 
 
+// Define a custom conversion function for the test that follows
 namespace argagg {
 namespace convert {
   template <>

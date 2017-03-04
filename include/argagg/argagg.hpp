@@ -495,7 +495,8 @@ constexpr static int optional = -1;
  * Tests whether or not a string contains a valid flag.
  */
 bool is_valid_flag(
-  const char* s)
+  const char* s,
+  const bool allow_short_flag_groups = false)
 {
   auto len = std::strlen(s);
 
@@ -525,6 +526,12 @@ bool is_valid_flag(
   // prevent things like "---a" from being valid flags.
   len = std::strlen(name);
   if (!std::isalnum(name[0])) {
+    return false;
+  }
+
+  // If this is a short flag then it must only have one character unless we are
+  // also allowing short flag groups in this check.
+  if (!is_long && len > 1 && !allow_short_flag_groups) {
     return false;
   }
 

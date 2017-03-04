@@ -1,4 +1,17 @@
 language: cpp
 dist: trusty
+install:
+  - sudo apt-get install lcov
+  - gem install coveralls-lcov
 script:
-  - mkdir build && cd build && cmake .. && cmake --build . && ctest -V
+  - mkdir build
+  - cd build
+  - cmake .. \
+    -DCMAKE_BUILD_TYPE=DEBUG \
+    -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage"
+  - cmake --build . \
+  - ctest -V
+  - lcov -d . -c -o coverage.info
+  - lcov -r coverage.info "/usr*" -o coverage.info
+  - lcov -l coverage.info
+  - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info

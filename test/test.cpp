@@ -8,25 +8,45 @@
 #include <vector>
 
 
-TEST_CASE("is_valid_flag")
+TEST_CASE("cmd_line_arg_is_option_flag")
 {
-  CHECK(argagg::is_valid_flag("") == false);
-  CHECK(argagg::is_valid_flag("a") == false);
-  CHECK(argagg::is_valid_flag("abc") == false);
-  CHECK(argagg::is_valid_flag("-") == false);
-  CHECK(argagg::is_valid_flag("-a") == true);
-  CHECK(argagg::is_valid_flag("-abc") == false);
-  CHECK(argagg::is_valid_flag("-abc", true) == true);
-  CHECK(argagg::is_valid_flag("--") == false);
-  CHECK(argagg::is_valid_flag("---a") == false);
-  CHECK(argagg::is_valid_flag("--a") == true);
-  CHECK(argagg::is_valid_flag("--abc") == true);
-  CHECK(argagg::is_valid_flag("---abc") == false);
-  CHECK(argagg::is_valid_flag("--a@b") == false);
-  CHECK(argagg::is_valid_flag("--a+b") == false);
-  CHECK(argagg::is_valid_flag("--a-b") == true);
-  CHECK(argagg::is_valid_flag("-a-b") == false);
-  CHECK(argagg::is_valid_flag("-a-b", true) == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("") == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("a") == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("abc") == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("-") == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("-a") == true);
+  CHECK(argagg::cmd_line_arg_is_option_flag("-abc") == true);
+  CHECK(argagg::cmd_line_arg_is_option_flag("-I/usr/local/include") == true);
+  CHECK(argagg::cmd_line_arg_is_option_flag("--") == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("---a") == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("--a") == true);
+  CHECK(argagg::cmd_line_arg_is_option_flag("--abc") == true);
+  CHECK(argagg::cmd_line_arg_is_option_flag("---abc") == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("--a@b") == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("--a+b") == false);
+  CHECK(argagg::cmd_line_arg_is_option_flag("--foo-bar") == true);
+  CHECK(argagg::cmd_line_arg_is_option_flag("--output=~/out.txt") == true);
+}
+
+
+TEST_CASE("is_valid_flag_definition")
+{
+  CHECK(argagg::is_valid_flag_definition("") == false);
+  CHECK(argagg::is_valid_flag_definition("a") == false);
+  CHECK(argagg::is_valid_flag_definition("abc") == false);
+  CHECK(argagg::is_valid_flag_definition("-") == false);
+  CHECK(argagg::is_valid_flag_definition("-a") == true);
+  CHECK(argagg::is_valid_flag_definition("-abc") == false);
+  CHECK(argagg::is_valid_flag_definition("-I/usr/local/include") == false);
+  CHECK(argagg::is_valid_flag_definition("--") == false);
+  CHECK(argagg::is_valid_flag_definition("---a") == false);
+  CHECK(argagg::is_valid_flag_definition("--a") == true);
+  CHECK(argagg::is_valid_flag_definition("--abc") == true);
+  CHECK(argagg::is_valid_flag_definition("---abc") == false);
+  CHECK(argagg::is_valid_flag_definition("--a@b") == false);
+  CHECK(argagg::is_valid_flag_definition("--a+b") == false);
+  CHECK(argagg::is_valid_flag_definition("--foo-bar") == true);
+  CHECK(argagg::is_valid_flag_definition("--output=~/out.txt") == false);
 }
 
 
@@ -51,7 +71,8 @@ TEST_CASE("intro example")
         "number", 1},
     }};
   std::vector<const char*> argv {
-    "test", "3.141", "foo", "-h", "bar", "300", "-n", "100", "-d", "--", "-"};
+    "test", "3.141", "foo", "-h", "bar", "300", "-n", "100", "-d", "-", "-",
+    "--", "-b", "--blah"};
   argagg::parser_results args;
   try {
     args = argparser.parse(argv.size(), &(argv.front()));
@@ -79,6 +100,9 @@ TEST_CASE("intro example")
   CHECK(args.as<std::string>(1) == "foo");
   CHECK(args.as<std::string>(2) == "bar");
   CHECK(args.as<int>(3) == 300);
+  CHECK(args.as<std::string>(4) == "-");
+  CHECK(args.as<std::string>(5) == "-b");
+  CHECK(args.as<std::string>(6) == "--blah");
 }
 
 
@@ -107,10 +131,88 @@ TEST_CASE("no definitions")
     CHECK(::std::string(args.pos[1]) == "bar");
     CHECK(::std::string(args.pos[2]) == "baz");
   }
+  SUBCASE("with flags") {
+    std::vector<const char*> argv {
+      "test", "--verbose", "-o", "baz"};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::unexpected_option_error);
+  }
 }
 
 
-TEST_CASE("general")
+TEST_CASE("invalid definitions")
+{
+  std::vector<const char*> argv {
+    "test"};
+  SUBCASE("no flags") {
+    argagg::parser parser {{
+        {"bad", {}, "bad", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
+  SUBCASE("too short") {
+    argagg::parser parser {{
+        {"bad", {"-"}, "bad", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
+  SUBCASE("too short 2") {
+    argagg::parser parser {{
+        {"bad", {"a"}, "bad", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
+  SUBCASE("no hyphen") {
+    argagg::parser parser {{
+        {"bad", {"bad"}, "bad", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
+  SUBCASE("short flag group") {
+    argagg::parser parser {{
+        {"bad", {"-bad"}, "bad", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
+  SUBCASE("invalid character") {
+    argagg::parser parser {{
+        {"bad", {"-b ad"}, "bad", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
+  SUBCASE("too many hyphens") {
+    argagg::parser parser {{
+        {"bad", {"---bad"}, "bad", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
+  SUBCASE("long flag equal assignment") {
+    argagg::parser parser {{
+        {"bad", {"--bad=still-bad"}, "bad", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
+}
+
+
+TEST_CASE("simple")
 {
   argagg::parser parser {{
       {"verbose", {"-v", "--verbose"}, "be verbose", 0},
@@ -133,9 +235,9 @@ TEST_CASE("general")
     CHECK(args.has_option("verbose") == false);
     CHECK(args.has_option("output") == false);
     CHECK(args.count() == 3);
-    CHECK(::std::string(args.pos[0]) == "foo");
-    CHECK(::std::string(args.pos[1]) == "bar");
-    CHECK(::std::string(args.pos[2]) == "baz");
+    CHECK(args.as<std::string>(0) == "foo");
+    CHECK(args.as<std::string>(1) == "bar");
+    CHECK(args.as<std::string>(2) == "baz");
   }
   SUBCASE("only flags") {
     std::vector<const char*> argv {
@@ -146,6 +248,8 @@ TEST_CASE("general")
     CHECK(args["verbose"].count() == 2);
     CHECK(args["verbose"][0].arg == nullptr);
     CHECK(args["verbose"][1].arg == nullptr);
+    CHECK_THROWS({args["verbose"][0].as<std::string>();});
+    CHECK_THROWS({args["verbose"][0].as<int>();});
     CHECK(args.has_option("output") == true);
     CHECK(args["output"].count() == 2);
     CHECK(args["output"][0].as<std::string>() == "foo");
@@ -215,15 +319,62 @@ TEST_CASE("general")
 }
 
 
+TEST_CASE("long flag equal format for arguments")
+{
+  argagg::parser parser {{
+      {"verbose", {"-v", "--verbose"}, "be verbose", 0},
+      {"delim", {"-d", "--delim"}, "delimiter", 1},
+      {"output", {"-o", "--output"}, "output", 1},
+    }};
+  SUBCASE("basic") {
+    std::vector<const char*> argv {
+      "test", "-v", "--output=foo", "--delim=bar", "baz"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == true);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "foo");
+    CHECK(args.has_option("delim") == true);
+    CHECK(args["delim"].as<std::string>() == "bar");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "baz");
+  }
+  SUBCASE("empty") {
+    std::vector<const char*> argv {
+      "test", "-v", "--output=", "--delim=", "baz"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == true);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "");
+    CHECK(args.has_option("delim") == true);
+    CHECK(args["delim"].as<std::string>() == "");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "baz");
+  }
+  SUBCASE("symbols") {
+    std::vector<const char*> argv {
+      "test", "-v", "--output=--foo!!", "--delim=,", "baz"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == true);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "--foo!!");
+    CHECK(args.has_option("delim") == true);
+    CHECK(args["delim"].as<std::string>() == ",");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "baz");
+  }
+}
+
+
 TEST_CASE("flag stop")
 {
   argagg::parser parser {{
       {"verbose", {"-v", "--verbose"}, "be verbose", 0},
-      {"delim", {"-d", "--delim"}, "delimiter", argagg::optional},
+      {"delim", {"-d", "--delim"}, "delimiter", 1},
     }};
   SUBCASE("ignore flags after stop") {
     std::vector<const char*> argv {
-      "test", "-v", "--", "bar", "--verbose", "baz", "--delim", "dog", "-d", "cat"};
+      "test", "-v", "--", "bar", "--verbose", "baz",
+      "--delim", "dog", "-d", "cat"};
     argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     CHECK(args.has_option("help") == false);
     CHECK(args.has_option("verbose") == true);
@@ -239,21 +390,22 @@ TEST_CASE("flag stop")
     CHECK(args.as<std::string>(5) == "-d");
     CHECK(args.as<std::string>(6) == "cat");
   }
-  SUBCASE("use flag stop for dash argument") {
+  SUBCASE("flag stop consumed as argument for option") {
     std::vector<const char*> argv {
-      "test", "-d", "--", "-", "boo"};
+      "test", "-d", "--", "--", "-", "boo"};
     argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     CHECK(args.has_option("help") == false);
     CHECK(args.has_option("verbose") == false);
     CHECK(args.has_option("delim") == true);
-    CHECK(args["delim"].as<std::string>() == "-");
-    CHECK(args.count() == 1);
-    CHECK(args.as<std::string>(0) == "boo");
+    CHECK(args["delim"].as<std::string>() == "--");
+    CHECK(args.count() == 2);
+    CHECK(args.as<std::string>(0) == "-");
+    CHECK(args.as<std::string>(1) == "boo");
   }
 }
 
 
-TEST_CASE("need one flag argument")
+TEST_CASE("option requires argument")
 {
   argagg::parser parser {{
       {"verbose", {"-v", "--verbose"}, "be verbose", 0},
@@ -271,13 +423,14 @@ TEST_CASE("need one flag argument")
     CHECK(args.count() == 1);
     CHECK(args.as<int>(0) == 2);
   }
-  SUBCASE("given zero, interrupted by flag")
+  SUBCASE("use flag as argument even though it is a valid flag")
   {
     std::vector<const char*> argv {
       "test", "-n", "-v"};
-    CHECK_THROWS_AS({
-      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::option_lacks_argument_error);
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("number") == true);
+    CHECK(args["number"].count() == 1);
+    CHECK(args["number"][0].as<std::string>() == "-v");
   }
   SUBCASE("interrupted by unused flag")
   {
@@ -294,27 +447,6 @@ TEST_CASE("need one flag argument")
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     }, argagg::option_lacks_argument_error);
   }
-}
-
-
-TEST_CASE("optional flag arguments")
-{
-  argagg::parser parser {{
-      {"verbose", {"-v", "--verbose"}, "be verbose", 0},
-      {"number", {"-n", "--number"}, "number", argagg::optional},
-    }};
-  std::vector<const char*> argv {
-    "test", "-n", "1", "-n", "-n", "3", "-v", "4"};
-  argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-  CHECK(args.has_option("verbose") == true);
-  CHECK(args["verbose"].count() == 1);
-  CHECK(args.has_option("number") == true);
-  CHECK(args["number"].count() == 3);
-  CHECK(args["number"][0].as<int>() == 1);
-  CHECK(args["number"][1].as<int>(0) == 0);
-  CHECK(args["number"][2].as<int>() == 3);
-  CHECK(args.count() == 1);
-  CHECK(args.as<int>(0) == 4);
 }
 
 

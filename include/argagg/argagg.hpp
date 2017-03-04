@@ -703,6 +703,119 @@ bool flag_is_short(
 
 /**
  * @brief
+ */
+struct parser_map {
+
+  /**
+   * @brief
+   */
+  std::array<const definition*, 256> short_map;
+
+  /**
+   * @brief
+   */
+  std::unordered_map<std::string, const definition*> long_map;
+
+  /**
+   * @brief
+   */
+  bool known_short_flag(
+    const char flag) const
+  {
+    return this->short_map[flag] != nullptr;
+  };
+
+  /**
+   * @brief
+   */
+  const definition* get_definition_for_short_flag(
+    const char flag) const
+  {
+    return this->short_map[flag];
+  };
+
+  /**
+   * @brief
+   */
+  bool known_long_flag(
+    const std::string& flag) const
+  {
+    const auto existing_long_flag = this->long_map.find(flag);
+    return existing_long_flag != long_map.end();
+  }
+
+  /**
+   * @brief
+   */
+  const definition* get_definition_for_long_flag(
+    const std::string& flag) const
+  {
+    const auto existing_long_flag = this->long_map.find(flag);
+    if (existing_long_flag == long_map.end()) {
+      return nullptr;
+    }
+    return existing_long_flag->second;
+  }
+
+};
+
+
+parser_map validate_definitions(
+  const std::vector<definition>& definitions)
+{
+  parser_map map {{}, {}};
+
+  for (auto& defn : definitions) {
+
+    if (defn.flags.size() == 0) {
+      std::ostringstream msg;
+      msg << "option \"" << defn.name << "\" has no flag definitions";
+      throw invalid_flag(msg.str());
+    }
+
+    for (auto& flag : defn.flags) {
+
+      if (!is_valid_flag_definition(flag)) {
+        std::ostringstream msg;
+        msg << "flag \"" << flag << "\" specified for option \"" << defn.name
+            << "\" is invalid";
+        throw invalid_flag(msg.str());
+      }
+
+      if (flag_is_short(flag)) {
+        const int short_flag_letter = flag[1];
+        const auto existing_short_flag = map.short_map[short_flag_letter];
+        bool short_flag_already_exists = (existing_short_flag != nullptr);
+        if (short_flag_already_exists) {
+          std::ostringstream msg;
+          msg << "duplicate short flag \"" << flag
+              << "\" found, specified by both option  \"" << defn.name
+              << "\" and option \"" << existing_short_flag->name;
+          throw invalid_flag(msg.str());
+        }
+        map.short_map[short_flag_letter] = &defn;
+        continue;
+      }
+
+      // If we're here then this is a valid, long-style flag.
+      if (map.known_long_flag(flag)) {
+        const auto existing_long_flag = map.get_definition_for_long_flag(flag);
+        std::ostringstream msg;
+        msg << "duplicate long flag \"" << flag
+            << "\" found, specified by both option  \"" << defn.name
+            << "\" and option \"" << existing_long_flag->name;
+        throw invalid_flag(msg.str());
+      }
+      map.long_map.insert(std::make_pair(flag, &defn));
+    }
+  }
+
+  return map;
+}
+
+
+/**
+ * @brief
  * A list of option definitions used to inform how to parse arguments.
  */
 struct parser {
@@ -725,12 +838,6 @@ struct parser {
    */
   parser_results parse(int argc, const char** argv) const
   {
-    // Initialize the parser results that we'll be returning. Store the program
-    // name (assumed to be the first command line argument) and initialize
-    // everything else as empty.
-    std::unordered_map<std::string, option_results> options {};
-    parser_results results {argv[0], std::move(options), {}};
-
     // Inspect each definition to see if its valid. You may wonder "why don't
     // you do this validation on construction?" I had thought about it but
     // realized that since I've made the parser an aggregate type (granted it
@@ -743,68 +850,20 @@ struct parser {
     // definition has been modified. It seems much simpler to just enforce the
     // validity when you actually want to parser because it's at the moment of
     // parsing that you know the definitions are complete.
-    std::array<const definition*, 256> short_map;
-    std::fill(short_map.begin(), short_map.end(), nullptr);
-    std::unordered_map<std::string, const definition*> long_map {};
-    for (auto& defn : this->definitions) {
+    parser_map map = validate_definitions(this->definitions);
 
-      if (defn.flags.size() == 0) {
-        std::ostringstream msg;
-        msg << "option \"" << defn.name << "\" has no flag definitions";
-        throw invalid_flag(msg.str());
-      }
+		// Initialize the parser results that we'll be returning. Store the program
+    // name (assumed to be the first command line argument) and initialize
+    // everything else as empty.
+    std::unordered_map<std::string, option_results> options {};
+    parser_results results {argv[0], std::move(options), {}};
 
-      for (auto& flag : defn.flags) {
-
-        if (!is_valid_flag_definition(flag)) {
-          std::ostringstream msg;
-          msg << "flag \"" << flag << "\" specified for option \"" << defn.name
-              << "\" is invalid";
-          throw invalid_flag(msg.str());
-        }
-
-        if (flag_is_short(flag)) {
-          const int short_flag_letter = flag[1];
-          const auto existing_short_flag = short_map[short_flag_letter];
-          bool short_flag_already_exists = (existing_short_flag != nullptr);
-          if (short_flag_already_exists) {
-            std::ostringstream msg;
-            msg << "duplicate short flag \"" << flag
-                << "\" found, specified by both option  \"" << defn.name
-                << "\" and option \"" << existing_short_flag->name;
-            throw invalid_flag(msg.str());
-          }
-          short_map[short_flag_letter] = &defn;
-          continue;
-        }
-
-        // If we're here then this is a valid, long-style flag.
-        const auto existing_long_flag = long_map.find(flag);
-        bool long_flag_exists = (existing_long_flag != long_map.end());
-        if (long_flag_exists) {
-          std::ostringstream msg;
-          msg << "duplicate long flag \"" << existing_long_flag->first
-              << "\" found, specified by both option  \"" << defn.name
-              << "\" and option \"" << existing_long_flag->second->name;
-          throw invalid_flag(msg.str());
-        }
-        long_map.insert(std::make_pair(flag, &defn));
-      }
-
-      // Add an empty option result for each definition.
+    // Add an empty option result for each definition.
+    for (const auto& defn : this->definitions) {
       option_results opt_results {{}};
       results.options.insert(
         std::move(std::make_pair(defn.name, opt_results)));
     }
-
-    auto known_short_flag = [&](const char flag) {
-        return short_map[flag] != nullptr;
-      };
-
-    auto get_definition_for_short_flag = [&](const char flag) {
-        return short_map[flag];
-      };
-
 
     // Don't start off ignoring flags. We only ignore flags after a -- shows up
     // in the command line arguments.
@@ -879,7 +938,10 @@ struct parser {
         // Long flags have a complication: their arguments can be specified
         // using an '=' character right inside the argument. That means an
         // argument like "--output=foobar.txt" is actually an option with flag
-        // "--output" and argument "foobar.txt".
+        // "--output" and argument "foobar.txt". So we look for the first
+        // instance of the '=' character and keep it in long_flag_arg. If
+        // long_flag_arg is nullptr then we didn't find '='. We need the
+        // flag_len to construct long_flag_str below.
         auto long_flag_arg = std::strchr(arg_i_cstr, '=');
         std::size_t flag_len = arg_i_len;
         if (long_flag_arg != nullptr) {
@@ -887,15 +949,13 @@ struct parser {
         }
         std::string long_flag_str(arg_i_cstr, flag_len);
 
-        const auto existing_long_flag = long_map.find(long_flag_str);
-        bool long_flag_exists = (existing_long_flag != long_map.end());
-        if (!long_flag_exists) {
+        if (!map.known_long_flag(long_flag_str)) {
           std::ostringstream msg;
           msg << "found unexpected flag: " << long_flag_str;
           throw unexpected_option_error(msg.str());
         }
 
-        auto defn = existing_long_flag->second;
+        const auto defn = map.get_definition_for_long_flag(long_flag_str);
 
         if (long_flag_arg != nullptr && defn->num_args == 0) {
           std::ostringstream msg;
@@ -904,6 +964,9 @@ struct parser {
           throw unexpected_argument_error(msg.str());
         }
 
+        // We've got a legitimate, known long flag option so we add an option
+        // result. This option result initially has an arg of nullptr, but that
+        // might change in the following block.
         auto& opt_results = results.options[defn->name];
         option_result opt_result {nullptr};
         opt_results.all.push_back(std::move(opt_result));
@@ -942,14 +1005,14 @@ struct parser {
           throw std::domain_error(msg.str());
         }
 
-        if (!known_short_flag(short_flag)) {
+        if (!map.known_short_flag(short_flag)) {
           std::ostringstream msg;
           msg << "found unexpected flag '" << arg_i_cstr[sf_idx]
               << "' in flag group '" << arg_i_cstr << "'";
           throw unexpected_option_error(msg.str());
         }
 
-        auto defn = get_definition_for_short_flag(short_flag);
+        auto defn = map.get_definition_for_short_flag(short_flag);
         auto& opt_results = results.options[defn->name];
 
         // Create an option result with an empty argument (for now) and add it

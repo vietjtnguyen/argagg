@@ -523,6 +523,24 @@ struct definition {
    */
   char num_args;
 
+  /**
+   * @brief
+   * Returns true if this option does not want any arguments.
+   */
+  bool wants_no_arguments() const
+  {
+    return this->num_args == 0;
+  }
+
+  /**
+   * @brief
+   * Returns true if this option requires arguments.
+   */
+  bool requires_arguments() const
+  {
+    return this->num_args > 0;
+  }
+
 };
 
 

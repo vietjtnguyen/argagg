@@ -483,7 +483,7 @@ struct definition {
 
 /**
  * @brief
- * A sentinal value that argagg::definition::num_args can be set to. When used
+ * A sentinel value that argagg::definition::num_args can be set to. When used
  * it means that this option expects zero or one arguments.
  */
 constexpr static int optional = -1;

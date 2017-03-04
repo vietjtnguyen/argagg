@@ -763,7 +763,7 @@ struct parser_map {
 parser_map validate_definitions(
   const std::vector<definition>& definitions)
 {
-  parser_map map {{}, {}};
+  parser_map map {{nullptr}, {}};
 
   for (auto& defn : definitions) {
 

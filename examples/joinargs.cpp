@@ -38,15 +38,14 @@ int main(
         // itself is streamed out.
         "displays help information",
 
-        // Number of arguments needed by this option. Should be 0, 1, or
-        // argagg::optional.
+        // Number of arguments needed by this option. Should be 0 or 1.
         0},
       {
         "verbose", {"-v", "--verbose"},
         "increases verbosity", 0},
       {
         "sep", {"-s", "--sep"},
-        "separator (default ',')", argagg::optional},
+        "separator (default ',')", 1},
       {
         "output", {"-o", "--output"},
         "output filename (stdout if not specified)", 1},

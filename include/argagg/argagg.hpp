@@ -815,6 +815,7 @@ namespace convert {
     return ret;
   }
 
+
 #define DEFINE_CONVERSION_FROM_LONG_(TYPE) \
   template <> \
   TYPE arg(const char* arg) \
@@ -822,14 +823,18 @@ namespace convert {
     return long_<TYPE>(arg); \
   }
 
-  DEFINE_CONVERSION_FROM_LONG_(short);
-  DEFINE_CONVERSION_FROM_LONG_(unsigned short);
-  DEFINE_CONVERSION_FROM_LONG_(int);
-  DEFINE_CONVERSION_FROM_LONG_(unsigned int);
-  DEFINE_CONVERSION_FROM_LONG_(long);
-  DEFINE_CONVERSION_FROM_LONG_(unsigned long);
+  DEFINE_CONVERSION_FROM_LONG_(char)
+  DEFINE_CONVERSION_FROM_LONG_(unsigned char)
+  DEFINE_CONVERSION_FROM_LONG_(signed char)
+  DEFINE_CONVERSION_FROM_LONG_(short)
+  DEFINE_CONVERSION_FROM_LONG_(unsigned short)
+  DEFINE_CONVERSION_FROM_LONG_(int)
+  DEFINE_CONVERSION_FROM_LONG_(unsigned int)
+  DEFINE_CONVERSION_FROM_LONG_(long)
+  DEFINE_CONVERSION_FROM_LONG_(unsigned long)
 
 #undef DEFINE_CONVERSION_FROM_LONG_
+
 
 #define DEFINE_CONVERSION_FROM_LONG_LONG_(TYPE) \
   template <> \
@@ -838,10 +843,11 @@ namespace convert {
     return long_long_<TYPE>(arg); \
   }
 
-  DEFINE_CONVERSION_FROM_LONG_LONG_(long long);
-  DEFINE_CONVERSION_FROM_LONG_LONG_(unsigned long long);
+  DEFINE_CONVERSION_FROM_LONG_LONG_(long long)
+  DEFINE_CONVERSION_FROM_LONG_LONG_(unsigned long long)
 
 #undef DEFINE_CONVERSION_FROM_LONG_LONG_
+
 
   template <>
   float arg(const char* arg)
@@ -855,6 +861,7 @@ namespace convert {
     return ret;
   }
 
+
   template <>
   double arg(const char* arg)
   {
@@ -867,11 +874,13 @@ namespace convert {
     return ret;
   }
 
+
   template <>
   const char* arg(const char* arg)
   {
     return arg;
   }
+
 
   template <>
   std::string arg(const char* arg)

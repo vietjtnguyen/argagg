@@ -71,6 +71,16 @@ if( ARGAGG_BUILD_EXAMPLES )
       INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   )
+
+  add_executable( gengetopt_main1 "examples/gengetopt_main1.cpp" )
+  set_target_properties(
+    gengetopt_main1
+    PROPERTIES
+      COMPILE_FLAGS "${ARGAGG_TEST_COMPILE_FLAGS}"
+      INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+      OUTPUT_NAME sample1
+  )
 endif()
 
 

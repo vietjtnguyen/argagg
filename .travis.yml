@@ -10,6 +10,6 @@ script:
   - cmake --build .
   - ctest -V
   - lcov -d . -c -o coverage.info
-  - lcov -r coverage.info "/usr*" -o coverage.info
-  - lcov -l coverage.info
+  - lcov -r coverage.info "/usr*" "../test/*" -o coverage.info
+  - lcov -l coverage.in
   - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info

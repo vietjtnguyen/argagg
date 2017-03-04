@@ -743,7 +743,7 @@ struct parser {
     // definition has been modified. It seems much simpler to just enforce the
     // validity when you actually want to parser because it's at the moment of
     // parsing that you know the definitions are complete.
-    std::array<definition*, 256> short_map {};
+    std::array<definition*, 256> short_map;
     std::fill(short_map.begin(), short_map.end(), nullptr);
     std::unordered_map<std::string, definition*> long_map {};
     for (auto& defn : this->definitions) {

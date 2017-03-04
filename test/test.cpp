@@ -28,6 +28,16 @@ TEST_CASE("is_valid_flag")
 }
 
 
+TEST_CASE("flag_is_short")
+{
+  CHECK(argagg::flag_is_short("-a") == true);
+  CHECK(argagg::flag_is_short("-abc") == true);
+  CHECK(argagg::flag_is_short("--a") == false);
+  CHECK(argagg::flag_is_short("--abc") == false);
+  CHECK(argagg::flag_is_short("--a-b") == false);
+}
+
+
 TEST_CASE("intro example")
 {
   argagg::parser argparser {{

@@ -538,6 +538,18 @@ bool is_valid_flag(
 
 /**
  * @brief
+ * Tests whether or not a valid flag is short. Assumes the provided cstring is
+ * already a valid flag.
+ */
+bool flag_is_short(
+  const char* s)
+{
+  return s[0] == '-' && std::isalnum(s[1]);
+}
+
+
+/**
+ * @brief
  * A list of option definitions used to inform how to parse arguments.
  */
 struct parser {

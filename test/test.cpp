@@ -8,6 +8,26 @@
 #include <vector>
 
 
+TEST_CASE("is_valid_flag")
+{
+  CHECK(argagg::is_valid_flag("") == false);
+  CHECK(argagg::is_valid_flag("a") == false);
+  CHECK(argagg::is_valid_flag("abc") == false);
+  CHECK(argagg::is_valid_flag("-") == false);
+  CHECK(argagg::is_valid_flag("-a") == true);
+  CHECK(argagg::is_valid_flag("-abc") == true);
+  CHECK(argagg::is_valid_flag("--") == false);
+  CHECK(argagg::is_valid_flag("---a") == false);
+  CHECK(argagg::is_valid_flag("--a") == true);
+  CHECK(argagg::is_valid_flag("--abc") == true);
+  CHECK(argagg::is_valid_flag("---abc") == false);
+  CHECK(argagg::is_valid_flag("--a@b") == false);
+  CHECK(argagg::is_valid_flag("--a+b") == false);
+  CHECK(argagg::is_valid_flag("--a-b") == true);
+  CHECK(argagg::is_valid_flag("-a-b") == false);
+}
+
+
 TEST_CASE("intro example")
 {
   argagg::parser argparser {{

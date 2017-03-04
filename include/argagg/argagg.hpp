@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <cctype>
 #include <iterator>
 #include <ostream>
 #include <sstream>
@@ -487,6 +488,52 @@ struct definition {
  * it means that this option expects zero or one arguments.
  */
 constexpr static int optional = -1;
+
+
+/**
+ * @brief
+ * Tests whether or not a string contains a valid flag.
+ */
+bool is_valid_flag(
+  const char* s)
+{
+  auto len = std::strlen(s);
+
+  // The shortest possible flag has two characters: a hyphen and an
+  // alpha-numeric character.
+  if (len < 2) {
+    return false;
+  }
+
+  // All flags must start with a hyphen.
+  if (s[0] != '-') {
+    return false;
+  }
+
+  // Just -- is not a valid flag.
+  const char* name = s + 1;
+  bool is_long = false;
+  if (s[1] == '-') {
+    if (len == 2) {
+      return false;
+    }
+    name = s + 2;
+    is_long = true;
+  }
+
+  // The first character of the flag name must be alpha-numeric. This is to
+  // prevent things like "---a" from being valid flags.
+  len = std::strlen(name);
+  if (!std::isalnum(name[0])) {
+    return false;
+  }
+
+  // The rest of the flag needs to be alpha-numeric or can have a hyphen (but
+  // only if it's a long flag).
+  return std::all_of(name, name + len, [=](const char& c) {
+      return std::isalnum(c) || (is_long && c == '-');
+    });
+}
 
 
 /**

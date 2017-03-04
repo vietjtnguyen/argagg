@@ -516,12 +516,11 @@ struct definition {
 
   /**
    * @brief
-   * Number of arguments this option requires. Must be 0, 1, or
-   * ::argagg::optional. All other values have undefined behavior. Okay, the
-   * code actually works with positive values in general, but it's unorthodox
-   * command line behavior.
+   * Number of arguments this option requires. Must be 0 or 1. All other values
+   * have undefined behavior. Okay, the code actually works with positive
+   * values in general, but it's unorthodox command line behavior.
    */
-  char num_args;
+  unsigned int num_args;
 
   /**
    * @brief
@@ -546,19 +545,13 @@ struct definition {
 
 /**
  * @brief
- * A sentinel value that argagg::definition::num_args can be set to. When used
- * it means that this option expects zero or one arguments.
+ * Checks whether or not a command-line argument should be processed as an
+ * option flag. This is very similar to is_valid_flag_definition() but must
+ * allow for short flag groups (e.g. "-abc") and equal-assigned long flag
+ * arguments (e.g. "--output=foo.txt").
  */
-constexpr static int optional = -1;
-
-
-/**
- * @brief
- * Tests whether or not a string contains a valid flag.
- */
-bool is_valid_flag(
-  const char* s,
-  const bool allow_short_flag_groups = false)
+bool cmd_line_arg_is_option_flag(
+  const char* s)
 {
   auto len = std::strlen(s);
 
@@ -573,15 +566,23 @@ bool is_valid_flag(
     return false;
   }
 
-  // Just -- is not a valid flag.
+  // Shift the name forward by a character to account for the initial hyphen.
+  // This means if s was originally "-v" then name will be "v".
   const char* name = s + 1;
+
+  // Check if we're dealing with a long flag.
   bool is_long = false;
   if (s[1] == '-') {
+    is_long = true;
+
+    // Just -- is not a valid flag.
     if (len == 2) {
       return false;
     }
+
+    // Shift the name forward to account for the extra hyphen. This means if s
+    // was originally "--output" then name will be "output".
     name = s + 2;
-    is_long = true;
   }
 
   // The first character of the flag name must be alpha-numeric. This is to
@@ -591,16 +592,99 @@ bool is_valid_flag(
     return false;
   }
 
-  // If this is a short flag then it must only have one character unless we are
-  // also allowing short flag groups in this check.
-  if (!is_long && len > 1 && !allow_short_flag_groups) {
+  // At this point in is_valid_flag_definition() we would check if the short
+  // flag has only one character. At command line specification you can group
+  // short flags together or even add an argument to a short flag without a
+  // space delimiter. Thus we don't check if this has only one character
+  // because it might not.
+
+  // If this is a long flag then we expect all characters *up to* an equal sign
+  // to be alpha-numeric or a hyphen. After the equal sign you are specify the
+  // argument to a long flag which can be basically anything.
+  if (is_long) {
+    bool encountered_equal = false;
+    return std::all_of(name, name + len, [&](const char& c) {
+        if (encountered_equal) {
+          return true;
+        } else {
+          if (c == '=') {
+            encountered_equal = true;
+            return true;
+          }
+          return std::isalnum(c) || c == '-';
+        }
+      });
+  }
+
+  // At this point we are not dealing with a long flag. We already checked that
+  // the first character is alpha-numeric so we've got the case of a single
+  // short flag covered. This might be a short flag group though and we might
+  // be tempted to check that each character of the short flag group is
+  // alpha-numeric. However, you can specify the argument for a short flag
+  // without a space delimiter (e.g. "-I/usr/local/include") so you can't tell
+  // if the rest of a short flag group is part of the argument or not unless
+  // you know what is a defined flag or not. We leave that kind of processing
+  // to the parser.
+  return true;
+}
+
+
+/**
+ * @brief
+ * Checks whether a flag in an option definition is valid. I suggest reading
+ * through the function source to understand what dictates a valid.
+ */
+bool is_valid_flag_definition(
+  const char* s)
+{
+  auto len = std::strlen(s);
+
+  // The shortest possible flag has two characters: a hyphen and an
+  // alpha-numeric character.
+  if (len < 2) {
     return false;
   }
 
-  // The rest of the flag needs to be alpha-numeric or can have a hyphen (but
-  // only if it's a long flag).
-  return std::all_of(name, name + len, [=](const char& c) {
-      return std::isalnum(c) || (is_long && c == '-');
+  // All flags must start with a hyphen.
+  if (s[0] != '-') {
+    return false;
+  }
+
+  // Shift the name forward by a character to account for the initial hyphen.
+  // This means if s was originally "-v" then name will be "v".
+  const char* name = s + 1;
+
+  // Check if we're dealing with a long flag.
+  bool is_long = false;
+  if (s[1] == '-') {
+    is_long = true;
+
+    // Just -- is not a valid flag.
+    if (len == 2) {
+      return false;
+    }
+
+    // Shift the name forward to account for the extra hyphen. This means if s
+    // was originally "--output" then name will be "output".
+    name = s + 2;
+  }
+
+  // The first character of the flag name must be alpha-numeric. This is to
+  // prevent things like "---a" from being valid flags.
+  len = std::strlen(name);
+  if (!std::isalnum(name[0])) {
+    return false;
+  }
+
+  // If this is a short flag then it must only have one character.
+  if (!is_long && len > 1) {
+    return false;
+  }
+
+  // The rest of the characters must be alpha-numeric, but long flags are
+  // allowed to have hyphens too.
+  return std::all_of(name + 1, name + len, [&](const char& c) {
+      return std::isalnum(c) || (c == '-' && is_long);
     });
 }
 
@@ -628,136 +712,271 @@ struct parser {
    * Vector of the option definitions which inform this parser how to parse
    * the command line arguments.
    */
-  std::vector<::argagg::definition> definitions;
+  std::vector<definition> definitions;
 
   /**
    * @brief
    * Parses the provided command line arguments and returns the results as
-   * argagg::parser::results.
+   * @ref parser_results.
+   *
+   * @note
+   * This method is not thread-safe and assumes that no modifications are made
+   * to the definitions member field during the extent of this method call.
    */
-  ::argagg::parser_results parse(int argc, const char** argv)
+  parser_results parse(int argc, const char** argv)
   {
-    bool ignore_flags = false;
-    const char* last_flag_expecting_args = nullptr;
-    option_result* last_option_expecting_args = nullptr;
-    char num_option_args_to_consume = 0;
+    // Initialize the parser results that we'll be returning. Store the program
+    // name (assumed to be the first command line argument) and initialize
+    // everything else as empty.
+    std::unordered_map<std::string, option_results> options {};
+    parser_results results {argv[0], std::move(options), {}};
 
-    ::argagg::parser_results results { argv[0], {{}}, {} };
-
-    // Add a result for each definition.
+    // Inspect each definition to see if its valid. You may wonder "why don't
+    // you do this validation on construction?" I had thought about it but
+    // realized that since I've made the parser an aggregate type (granted it
+    // just "aggregates" a single vector) I would need to track any changes to
+    // the definitions vector and re-run the validity check in order to
+    // maintain this expected "validity invariant" on the object. That would
+    // then require hiding the definitions vector as a private entry and then
+    // turning the parser into a thin interface (by re-exposing setters and
+    // getters) to the vector methods just so that I can catch when the
+    // definition has been modified. It seems much simpler to just enforce the
+    // validity when you actually want to parser because it's at the moment of
+    // parsing that you know the definitions are complete.
+    std::array<definition*, 256> short_map {};
+    std::fill(short_map.begin(), short_map.end(), nullptr);
+    std::unordered_map<std::string, definition*> long_map {};
     for (auto& defn : this->definitions) {
-      ::argagg::option_results opt_results {{}};
-      results.options.insert(std::make_pair(defn.name, opt_results));
+
+      if (defn.flags.size() == 0) {
+        std::ostringstream msg;
+        msg << "option \"" << defn.name << "\" has no flag definitions";
+        throw invalid_flag(msg.str());
+      }
+
+      for (auto& flag : defn.flags) {
+
+        if (!is_valid_flag_definition(flag)) {
+          std::ostringstream msg;
+          msg << "flag \"" << flag << "\" specified for option \"" << defn.name
+              << "\" is invalid";
+          throw invalid_flag(msg.str());
+        }
+
+        if (flag_is_short(flag)) {
+          const int short_flag_letter = flag[1];
+          const auto existing_short_flag = short_map[short_flag_letter];
+          bool short_flag_already_exists = (existing_short_flag != nullptr);
+          if (short_flag_already_exists) {
+            std::ostringstream msg;
+            msg << "duplicate short flag \"" << flag
+                << "\" found, specified by both option  \"" << defn.name
+                << "\" and option \"" << existing_short_flag->name;
+            throw invalid_flag(msg.str());
+          }
+          short_map[short_flag_letter] = &defn;
+          continue;
+        }
+
+        // If we're here then this is a valid, long-style flag.
+        const auto existing_long_flag = long_map.find(flag);
+        bool long_flag_exists = (existing_long_flag != long_map.end());
+        if (long_flag_exists) {
+          std::ostringstream msg;
+          msg << "duplicate long flag \"" << existing_long_flag->first
+              << "\" found, specified by both option  \"" << defn.name
+              << "\" and option \"" << existing_long_flag->second->name;
+          throw invalid_flag(msg.str());
+        }
+        long_map.insert(std::make_pair(flag, &defn));
+      }
+
+      // Add an empty option result for each definition.
+      option_results opt_results {{}};
+      results.options.insert(
+        std::move(std::make_pair(defn.name, opt_results)));
     }
 
+    auto known_short_flag = [&](const char flag) {
+        return short_map[flag] != nullptr;
+      };
+
+    auto get_definition_for_short_flag = [&](const char flag) {
+        return short_map[flag];
+      };
+
+
+    // Don't start off ignoring flags. We only ignore flags after a -- shows up
+    // in the command line arguments.
+    bool ignore_flags = false;
+
+    // Keep track of any options that are expecting arguments.
+    const char* last_flag_expecting_args = nullptr;
+    option_result* last_option_expecting_args = nullptr;
+    unsigned int num_option_args_to_consume = 0;
+
     // Get pointers to pointers so we can treat the raw pointer array as an
-    // iterator for standard library algorithms.
+    // iterator for standard library algorithms. This isn't used yet but can be
+    // used to template this function to work on iterators over strings or
+    // C-strings.
     const char** arg_i = argv + 1;
     const char** arg_end = argv + argc;
 
     while (arg_i != arg_end) {
-      auto arg_i_str = *arg_i;
+      auto arg_i_cstr = *arg_i;
+      auto arg_i_len = std::strlen(arg_i_cstr);
 
-      // If we're not ignoring flags then check to see if this argument looks
-      // like a definition that has been specified...
-      auto matching_flag = this->definitions.end();
-      if (!ignore_flags) {
-        matching_flag = std::find_if(
-          this->definitions.begin(), this->definitions.end(),
-          [=](const ::argagg::definition& defn) {
-            // ...and it looks like a definition that has been specified if the
-            // argument matches "any of" the flag strings for a given
-            // definition.
-            return std::any_of(
-              defn.flags.begin(), defn.flags.end(),
-              [=](const char* flag) {
-                return std::strcmp(flag, arg_i_str) == 0;
-              });
-          });
+      // Some behavior to note: if the previous option is expecting an argument
+      // then the next entry will be treated as a positional argument even if
+      // it looks like a flag.
+      bool treat_as_positional_argument = (
+          ignore_flags
+          || num_option_args_to_consume > 0
+          || !cmd_line_arg_is_option_flag(arg_i_cstr)
+        );
+      if (treat_as_positional_argument) {
+
+        // If last option is expecting some specific positive number of
+        // arguments then give this argument to that option, *regardless of
+        // whether or not the argument looks like a flag or is the special "--"
+        // argument*.
+        if (num_option_args_to_consume > 0) {
+          last_option_expecting_args->arg = arg_i_cstr;
+          --num_option_args_to_consume;
+          ++arg_i;
+          continue;
+        }
+
+        // Now we check if this is just "--" which is a special argument that
+        // causes all following arguments to be treated as non-options and is
+        // itselve discarded.
+        if (std::strncmp(arg_i_cstr, "--", 2) == 0 && arg_i_len == 2) {
+          ignore_flags = true;
+          ++arg_i;
+          continue;
+        }
+
+        // If there are no expectations for option arguments then simply use
+        // this argument as a positional argument.
+        results.pos.push_back(arg_i_cstr);
+        ++arg_i;
+        continue;
       }
 
-      if (matching_flag == this->definitions.end()) {
-        // If we are ignoring flags or the argument didn't match a definition
-        // that was specified...
+      // If we're at this point then we're definitely dealing with something
+      // that is flag-like and has hyphen as the first character and has a
+      // length of at least two characters. How we handle this potential flag
+      // depends on whether or not it is a long-option so we check that first.
+      bool is_long_flag = (arg_i_cstr[1] == '-');
 
-        if (!ignore_flags && arg_i_str[0] == '-') {
-          // If this argument actually looks like a flag...
+      if (is_long_flag) {
 
-          if (arg_i_str[1] == '-' && arg_i_str[2] == '\0') {
-            // If the argument is "--" then that means treat the rest of the
-            // arguments as positional arguments.
-            ignore_flags = true;
+        // Long flags have a complication: their arguments can be specified
+        // using an '=' character right inside the argument. That means an
+        // argument like "--output=foobar.txt" is actually an option with flag
+        // "--output" and argument "foobar.txt".
+        auto long_flag_arg = std::strchr(arg_i_cstr, '=');
+        std::size_t flag_len = arg_i_len;
+        if (long_flag_arg != nullptr) {
+          flag_len = long_flag_arg - arg_i_cstr;
+        }
+        std::string long_flag_str(arg_i_cstr, flag_len);
 
+        const auto existing_long_flag = long_map.find(long_flag_str);
+        bool long_flag_exists = (existing_long_flag != long_map.end());
+        if (!long_flag_exists) {
+          std::ostringstream msg;
+          msg << "found unexpected flag: " << long_flag_str;
+          throw unexpected_option_error(msg.str());
+        }
+
+        auto defn = existing_long_flag->second;
+
+        if (long_flag_arg != nullptr && defn->num_args == 0) {
+          std::ostringstream msg;
+          msg << "found argument for option not expecting an argument: "
+              << arg_i_cstr;
+          throw unexpected_argument_error(msg.str());
+        }
+
+        last_flag_expecting_args = nullptr;
+        last_option_expecting_args = nullptr;
+        num_option_args_to_consume = 0;
+
+        auto& opt_results = results.options[defn->name];
+        option_result opt_result {nullptr};
+        opt_results.all.push_back(std::move(opt_result));
+
+        if (defn->requires_arguments()) {
+          bool there_is_an_equal_delimited_arg = (long_flag_arg != nullptr);
+          if (there_is_an_equal_delimited_arg) {
+            // long_flag_arg would be "=foo" in the "--output=foo" case so we
+            // increment by 1 to get rid of the equal sign.
+            opt_results.all.back().arg = long_flag_arg + 1;
           } else {
-            // If we get a option and it isn't one that was specified nor "--"
-            // then this is an error.
+            last_flag_expecting_args = arg_i_cstr;
+            last_option_expecting_args = &(opt_results.all.back());
+            num_option_args_to_consume = defn->num_args;
+          }
+        }
+
+        ++arg_i;
+        continue;
+      }
+
+      // If we've made it here then we're looking at either a short flag or a
+      // group of short flags. Short flags can be grouped together so long as
+      // they don't require any arguments unless the option that does is the
+      // last in the group ("-o x -v" is okay, "-vo x" is okay, "-ov x" is
+      // not). So starting after the dash we're going to process each character
+      // as if it were a separate flag. Note "sf_idx" stands for "short flag
+      // index".
+      for (std::size_t sf_idx = 1; sf_idx < arg_i_len; ++sf_idx) {
+        const auto short_flag = arg_i_cstr[sf_idx];
+
+        if (!std::isalnum(short_flag)) {
+          std::ostringstream msg;
+          msg << "found non-alphanumeric character '" << arg_i_cstr[sf_idx]
+              << "' in flag group '" << arg_i_cstr << "'";
+          throw std::domain_error(msg.str());
+        }
+
+        if (!known_short_flag(short_flag)) {
+          std::ostringstream msg;
+          msg << "found unexpected flag '" << arg_i_cstr[sf_idx]
+              << "' in flag group '" << arg_i_cstr << "'";
+          throw unexpected_option_error(msg.str());
+        }
+
+        auto defn = get_definition_for_short_flag(short_flag);
+        auto& opt_results = results.options[defn->name];
+
+        // Create an option result with an empty argument (for now) and add it
+        // to this option's results.
+        option_result opt_result {nullptr};
+        opt_results.all.push_back(std::move(opt_result));
+
+        if (!defn->wants_no_arguments()) {
+
+          bool is_last_short_flag_in_group = (sf_idx == arg_i_len - 1);
+          if (defn->requires_arguments() && !is_last_short_flag_in_group) {
             std::ostringstream msg;
-            msg << "found unexpected flag: " << arg_i_str;
+            msg << "found option '" << defn->name << "' as flag '"
+                << arg_i_cstr[sf_idx] << "' in flag group '" << arg_i_cstr
+                << "' but this option requires an argument and is not at "
+                    "the end of the flag group";
             throw unexpected_option_error(msg.str());
           }
 
-        } else if (num_option_args_to_consume > 0) {
-          // If we get an argument and the last option is expecting some
-          // specific positive number of arguments then give this positional
-          // argument to that option.
-          last_option_expecting_args->arg = arg_i_str;
-          --num_option_args_to_consume;
-
-        } else if (num_option_args_to_consume == ::argagg::optional) {
-          // If we get an argument and the last option expects zero or one
-          // arguments then give this positional argument to the option and
-          // change mode so that we aren't expecting anymore option arguments.
-          last_option_expecting_args->arg = arg_i_str;
-          num_option_args_to_consume = 0;
-
-        } else {
-          // If there are no expectations for option arguments then simply use
-          // this argument as a positional argument.
-          results.pos.push_back(arg_i_str);
-
-        }
-      } else {
-        // If we found a option that was specified...
-
-        if (num_option_args_to_consume > 0) {
-          // If we get a known option but are expecting an argument for a
-          // previous option then throw an error.
-          std::ostringstream msg;
-          msg << "option \"" << last_flag_expecting_args
-              << "\" expects an argument but got another option (\""
-              << arg_i_str << "\") instead";
-          throw option_lacks_argument_error(msg.str());
-
-        } else if (num_option_args_to_consume == ::argagg::optional) {
-          // If we get a known option but are expecting zero or one arguments
-          // for the last option then simply reset the number of expected
-          // option arguments.
-          num_option_args_to_consume = 0;
-        }
-
-        // Get the option results.
-        auto& defn = *matching_flag;
-        auto& opt_results = results.options[defn.name];
-
-        // Add a single option result to option results.
-        ::argagg::option_result opt_result {nullptr};
-        opt_results.all.push_back(std::move(opt_result));
-
-        // If this option expects arguments then put our parser into the
-        // corresponding "expecting option arguments" mode.
-        if (defn.num_args != 0) {
-          last_flag_expecting_args = arg_i_str;
+          last_flag_expecting_args = arg_i_cstr;
           last_option_expecting_args = &(opt_results.all.back());
-          num_option_args_to_consume = defn.num_args;
-        } else {
-          last_flag_expecting_args = nullptr;
-          last_option_expecting_args = nullptr;
-          num_option_args_to_consume = 0;
+          num_option_args_to_consume = defn->num_args;
+          break;
         }
       }
 
-      // Go on to the next argument.
       ++arg_i;
+      continue;
     }
 
     // If we're done with all of the arguments but are still expecting

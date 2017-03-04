@@ -96,6 +96,27 @@ namespace argagg {
 
 /**
  * @brief
+ * This exception is thrown when a long option is parsed and is given an
+ * argument using the "=" syntax but the option doesn't expect an argument.
+ */
+struct unexpected_argument_error
+: public std::invalid_argument {
+
+  /**
+   * @brief
+   * Explicit constructor which passes "what" string argument to
+   * std::invalid_argument constructor.
+   */
+  explicit unexpected_argument_error(const std::string& what)
+  : std::invalid_argument(what)
+  {
+  }
+
+};
+
+
+/**
+ * @brief
  * This exception is thrown when an option is parsed unexpectedly such as when
  * an argument was expected for a previous option or if an option was found
  * that has not been defined.
@@ -131,6 +152,29 @@ struct option_lacks_argument_error
    * std::invalid_argument constructor.
    */
   explicit option_lacks_argument_error(const std::string& what)
+  : std::invalid_argument(what)
+  {
+  }
+
+};
+
+
+/**
+ * @brief
+ * This exception is thrown when an option's flag is invalid. This can be the
+ * case if the flag is not prefixed by one or two hyphens or contains non
+ * alpha-numeric characters after the hypens. See is_valid_flag_definition()
+ * for more details.
+ */
+struct invalid_flag
+: public std::invalid_argument {
+
+  /**
+   * @brief
+   * Explicit constructor which passes "what" string argument to
+   * std::invalid_argument constructor.
+   */
+  explicit invalid_flag(const std::string& what)
   : std::invalid_argument(what)
   {
   }

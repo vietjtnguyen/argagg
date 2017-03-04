@@ -249,6 +249,11 @@ struct option_result {
     if (this->arg) {
       return convert::arg<T>(this->arg);
     } else {
+      // I actually think this will never happen. To call this method you have
+      // to access a specific option_result for an option. If there's a
+      // specific option_result then the option was found. If the option
+      // requires an argument then it will definitely have an argument
+      // otherwise the parser would have complained.
       return t;
     }
   }

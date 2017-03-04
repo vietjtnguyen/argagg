@@ -209,6 +209,24 @@ TEST_CASE("invalid definitions")
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     }, argagg::invalid_flag);
   }
+  SUBCASE("duplicate short flags") {
+    argagg::parser parser {{
+        {"bad", {"-b"}, "bad", 0},
+        {"bad2", {"-b"}, "bad2", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
+  SUBCASE("duplicate long flags") {
+    argagg::parser parser {{
+        {"bad", {"--bad"}, "bad", 0},
+        {"bad2", {"--bad"}, "bad2", 0},
+      }};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::invalid_flag);
+  }
 }
 
 
@@ -233,6 +251,10 @@ TEST_CASE("simple")
     argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     CHECK(args.has_option("help") == false);
     CHECK(args.has_option("verbose") == false);
+    CHECK_THROWS_AS({
+      args["verbose"].as<int>();
+    }, std::out_of_range);
+    CHECK(args["verbose"].as<int>(999) == 999);
     CHECK(args.has_option("output") == false);
     CHECK(args.count() == 3);
     CHECK(args.as<std::string>(0) == "foo");
@@ -248,8 +270,12 @@ TEST_CASE("simple")
     CHECK(args["verbose"].count() == 2);
     CHECK(args["verbose"][0].arg == nullptr);
     CHECK(args["verbose"][1].arg == nullptr);
-    CHECK_THROWS({args["verbose"][0].as<std::string>();});
-    CHECK_THROWS({args["verbose"][0].as<int>();});
+    CHECK_THROWS_AS({
+      args["verbose"][0].as<std::string>();
+    }, argagg::option_lacks_argument_error);
+    CHECK_THROWS_AS({
+      args["verbose"][0].as<int>();
+    }, argagg::option_lacks_argument_error);
     CHECK(args.has_option("output") == true);
     CHECK(args["output"].count() == 2);
     CHECK(args["output"][0].as<std::string>() == "foo");
@@ -362,6 +388,13 @@ TEST_CASE("long flag equal format for arguments")
     CHECK(args.count() == 1);
     CHECK(args.as<std::string>(0) == "baz");
   }
+  SUBCASE("unnecessary argument") {
+    std::vector<const char*> argv {
+      "test", "--verbose=bad"};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, argagg::unexpected_argument_error);
+  }
 }
 
 
@@ -412,6 +445,13 @@ TEST_CASE("short flag groups")
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     }, argagg::unexpected_option_error);
+  }
+  SUBCASE("unexpected symbol") {
+    std::vector<const char*> argv {
+      "test", "-v-fh", "bar"};
+    CHECK_THROWS_AS({
+      argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    }, std::domain_error);
   }
   SUBCASE("trailing flag with argument") {
     std::vector<const char*> argv {
@@ -508,6 +548,18 @@ TEST_CASE("option requires argument")
     CHECK(args["number"][1].as<int>() == 4);
     CHECK(args.count() == 1);
     CHECK(args.as<int>(0) == 2);
+  }
+  SUBCASE("negative numbers") {
+    std::vector<const char*> argv {
+      "test", "-n", "-1", "-n", "-4444", "--", "-22"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("verbose") == false);
+    CHECK(args.has_option("number") == true);
+    CHECK(args["number"].count() == 2);
+    CHECK(args["number"][0].as<int>() == -1);
+    CHECK(args["number"][1].as<int>() == -4444);
+    CHECK(args.count() == 1);
+    CHECK(args.as<int>(0) == -22);
   }
   SUBCASE("use flag as argument even though it is a valid flag")
   {

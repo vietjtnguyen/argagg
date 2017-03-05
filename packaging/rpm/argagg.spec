@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:           argagg
-Version:        0.3.0
+Version:        0.3.1
 Release:        3%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
@@ -17,15 +17,15 @@ This is yet another C++ command line argument/option parser. It was written as
 a simple and idiomatic alternative to other frameworks like getopt, Boost
 program options, TCLAP, and others. The goal is to achieve the majority of
 argument parsing needs in a simple manner with an easy to use API. It operates
-as a single pass over all arguments, recognizing flags prefixed by `-` (short)
-or `--` (long) and aggregating them into easy to access structures with lots of
+as a single pass over all arguments, recognizing flags prefixed by - (short) or
+-- (long) and aggregating them into easy to access structures with lots of
 convenience functions. It defers processing types until you access them, so the
 result structures end up just being pointers into the original command line
-argument C-strings.
+argument C-strings. argagg supports POSIX recommended argument syntax
+conventions.
 
 %package        devel
 Summary:        Development files for %{name}
-Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
 The %{name}-devel package contains the header files for developing applications
@@ -33,11 +33,10 @@ that use %{name}.
 
 %package        doc
 Summary:        Developer documentation for %{name}
-Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    doc
-The %{name}-devel package contains the documentation for developing
-applications that use %{name}.
+The %{name}-doc package contains the documentation for developing applications
+that use %{name}.
 
 %prep
 %setup -q
@@ -61,6 +60,10 @@ ctest -V %{?_smp_mflags}
 %doc %{_datadir}/doc/%{name}
 
 %changelog
+* Sun Mar 05 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
+- Updated description
+- Remove dependence on empty root package
+
 * Sun Feb 19 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
 - Disabled creation of debuginfo package
 

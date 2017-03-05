@@ -8,6 +8,21 @@ Argument Aggregator
 
 This is yet another C++ command line argument/option parser. It was written as a simple and idiomatic alternative to other frameworks like [getopt][], [Boost program options][], [TCLAP][], and others. The goal is to achieve the majority of argument parsing needs in a simple manner with an easy to use API. It operates as a single pass over all arguments, recognizing flags prefixed by `-` (short) or `--` (long) and aggregating them into easy to access structures with lots of convenience functions. It defers processing types until you access them, so the result structures end up just being pointers into the original command line argument C-strings.
 
+`argagg` supports [POSIX recommended argument syntax conventions](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html):
+
+- Options (short) start with a hyphen (`-`) and long options start with two hyphens (`--`)
+- Multiple short options can be grouped following a single hyphen
+  - `-a -b -c` can also be written `-abc` or `-bac`, etc.
+- Option names are alpha numeric but long options may include hyphens
+  - `-v` is valid, `--ftest-coverage` is valid
+  - `-#` is not valid, `--bad$option` is not valid
+- Short options can be provided arguments with or without whitespace delimiters
+  - `-I /usr/local/include` and `-I/usr/local/include` are equally valid
+- Long options can be provided arguments with whitespace or equal sign delimiters
+  - `--output test.txt` and `--output=test.txt` are equivalent
+- Options and positional arguments can be 
+- `--` can be specified to treat all following arguments as positional arguments (i.e. not options)
+
 [getopt]: https://www.gnu.org/software/libc/manual/html_node/Getopt.html#Getopt
 [Boost program options]: http://www.boost.org/doc/libs/release/libs/program_options/
 [TCLAP]: http://tclap.sourceforge.net/
@@ -102,7 +117,7 @@ Finally, you can get all of the positional arguments as an `std::vector` using t
 
 One can also specify `--` on the command line in order to treat all following arguments as not options.
 
-For a more detailed treatment take a look at the [examples](./examples) or [test cases](./test).
+For a more detailed treatment take a look at the [examples](./examples) or [test cases](./test/test.cpp).
 
 Mental Model
 ------------
@@ -169,3 +184,25 @@ Override [`CMAKE_INSTALL_PREFIX`](https://cmake.org/cmake/help/v2.8.12/cmake.htm
 If you have [Doxygen](http://www.stack.nl/~dimitri/doxygen/) it should build and install documentation as well.
 
 There are no dependencies other than the standard library.
+
+Edge Cases
+----------
+
+There are some interesting edge cases that show up in option parsing. I used the behavior of `gcc` as my target reference in these cases.
+
+### Greedy Arguments
+
+Remember that options that require arguments will greedily process arguments.
+
+Say we have the following options: `-a`, `-b`, `-c`, and `-o`. They all don't accept arguments except `-o`. Below is a list of permutations for short flag grouping and the results:
+
+- `-abco foo`: `-o`'s argument is `foo`
+- `-aboc foo`: `-o`'s argument is `c`, `foo` is a positional argument
+- `-aobc foo`: `-o`'s argument is `bc`, `foo` is a positional argument
+- `-oabc foo`: `-o`'s argument is `abc`, `foo` is a positional argument
+
+For whitespace delimited arguments the greedy processing means the next argument element (in `argv`) will be treated as an argument for the previous option, regardless of whether or not it looks like a flag or some other special entry. That means you get behavior like below:
+
+- `--output=foo -- --bar`: `--output`'s argument is `foo`, `--bar` is a positional argument
+- `--output -- --bar`: `--output`'s argument is `--`, `--bar` is treated as a flag
+- `--output --bar`: `--output`'s argument is `--bar`

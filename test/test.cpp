@@ -588,6 +588,98 @@ TEST_CASE("option requires argument")
 }
 
 
+TEST_CASE("greedy processing")
+{
+  argagg::parser parser {{
+      {"a", {"-a"}, "a", 0},
+      {"b", {"-b", "--bar"}, "b", 0},
+      {"c", {"-c"}, "c", 0},
+      {"output", {"-o", "--output"}, "output", 1},
+    }};
+  SUBCASE("short group example 1") {
+    std::vector<const char*> argv {
+      "test", "-abco", "foo"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("a") == true);
+    CHECK(args.has_option("b") == true);
+    CHECK(args.has_option("c") == true);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "foo");
+    CHECK(args.count() == 0);
+  }
+  SUBCASE("short group example 2") {
+    std::vector<const char*> argv {
+      "test", "-aboc", "foo"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("a") == true);
+    CHECK(args.has_option("b") == true);
+    CHECK(args.has_option("c") == false);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "c");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "foo");
+  }
+  SUBCASE("short group example 3") {
+    std::vector<const char*> argv {
+      "test", "-aobc", "foo"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("a") == true);
+    CHECK(args.has_option("b") == false);
+    CHECK(args.has_option("c") == false);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "bc");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "foo");
+  }
+  SUBCASE("short group example 4") {
+    std::vector<const char*> argv {
+      "test", "-oabc", "foo"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("a") == false);
+    CHECK(args.has_option("b") == false);
+    CHECK(args.has_option("c") == false);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "abc");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "foo");
+  }
+  SUBCASE("long example 1") {
+    std::vector<const char*> argv {
+      "test", "--output=foo", "--", "--bar"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("a") == false);
+    CHECK(args.has_option("b") == false);
+    CHECK(args.has_option("c") == false);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "foo");
+    CHECK(args.count() == 1);
+    CHECK(args.as<std::string>(0) == "--bar");
+  }
+  SUBCASE("long example 2") {
+    std::vector<const char*> argv {
+      "test", "--output", "--", "--bar"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("a") == false);
+    CHECK(args.has_option("b") == true);
+    CHECK(args.has_option("c") == false);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "--");
+    CHECK(args.count() == 0);
+  }
+  SUBCASE("long example 3") {
+    std::vector<const char*> argv {
+      "test", "--output", "--bar"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("a") == false);
+    CHECK(args.has_option("b") == false);
+    CHECK(args.has_option("c") == false);
+    CHECK(args.has_option("output") == true);
+    CHECK(args["output"].as<std::string>() == "--bar");
+    CHECK(args.count() == 0);
+  }
+}
+
+
 TEST_CASE("gcc example")
 {
   argagg::parser parser {{

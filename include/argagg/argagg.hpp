@@ -708,21 +708,34 @@ bool flag_is_short(
 
 /**
  * @brief
+ * Contains two maps which aid in option parsing. The first map, @ref
+ * short_map, maps from a short flag (just a character) to a pointer to the
+ * original @ref definition that the flag represents. The second map, @ref
+ * long_map, maps from a long flag (an std::string) to a pointer to the
+ * original @ref definition that the flag represents.
+ *
+ * This object is usually a temporary that only exists during the parsing
+ * operation. It is typically constructed using @ref validate_definitions().
  */
 struct parser_map {
 
   /**
    * @brief
+   * Maps from a short flag (just a character) to a pointer to the original
+   * @ref definition that the flag represents.
    */
   std::array<const definition*, 256> short_map;
 
   /**
    * @brief
+   * Maps from a long flag (an std::string) to a pointer to the original @ref
+   * definition that the flag represents.
    */
   std::unordered_map<std::string, const definition*> long_map;
 
   /**
    * @brief
+   * Returns true if the provided short flag exists in the map object.
    */
   bool known_short_flag(
     const char flag) const
@@ -732,6 +745,8 @@ struct parser_map {
 
   /**
    * @brief
+   * If the short flag exists in the map object then it is returned by this
+   * method. If it doesn't then nullptr will be returned.
    */
   const definition* get_definition_for_short_flag(
     const char flag) const
@@ -741,6 +756,7 @@ struct parser_map {
 
   /**
    * @brief
+   * Returns true if the provided long flag exists in the map object.
    */
   bool known_long_flag(
     const std::string& flag) const
@@ -751,6 +767,8 @@ struct parser_map {
 
   /**
    * @brief
+   * If the long flag exists in the map object then it is returned by this
+   * method. If it doesn't then nullptr will be returned.
    */
   const definition* get_definition_for_long_flag(
     const std::string& flag) const
@@ -765,6 +783,13 @@ struct parser_map {
 };
 
 
+/**
+ * @brief
+ * Validates a collection (specifically an std::vector) of @ref definition
+ * objects by checking if the contained flags are valid. If the set of @ref
+ * definition objects is not valid then an exception is thrown. Upon successful
+ * validation a @ref parser_map object is returned.
+ */
 parser_map validate_definitions(
   const std::vector<definition>& definitions)
 {
@@ -1039,11 +1064,11 @@ struct parser {
             break;
           }
 
-          // If this short flag's option requires and argument and we're NOT
-          // the last flag in the short flag group then we automatically
-          // consume the rest of the short flag group as the argument for this
-          // flag. This is how we get the POSIX behavior of being able to
-          // specify a flag's arguments without a white space delimiter (e.g.
+          // If this short flag's option requires an argument and we're NOT the
+          // last flag in the short flag group then we automatically consume
+          // the rest of the short flag group as the argument for this flag.
+          // This is how we get the POSIX behavior of being able to specify a
+          // flag's arguments without a white space delimiter (e.g.
           // "-I/usr/local/include").
           opt_results.all.back().arg = arg_i_cstr + sf_idx + 1;
           break;
@@ -1070,8 +1095,10 @@ struct parser {
 
   /**
    * @brief
-   * Not sure why C++ won't consider going from "char**" to "const char**" as
-   * an implicitly safe operation but it doesn't so here's an overload.
+   * Through strict interpretation of pointer casting rules, despite this being
+   * a safe operation, C++ doesn't allow implicit casts from "char**" to "const
+   * char**" so here's an overload that performs a const_cast, which is
+   * typically frowned upon but is safe here.
    */
   parser_results parse(int argc, char** argv) const
   {

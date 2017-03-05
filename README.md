@@ -1,12 +1,12 @@
 Argument Aggregator
 ===================
 
-| Branch | Status |
+| Branch | Build | Coverage |
 | --- | --- |
-| `master` | ![Build Status](https://api.travis-ci.org/vietjtnguyen/argagg.svg?branch=master) |
-| `dev` | ![Build Status](https://api.travis-ci.org/vietjtnguyen/argagg.svg?branch=dev) |
+| `master` | ![Build Status](https://api.travis-ci.org/vietjtnguyen/argagg.svg?branch=master) | | [![Coverage Status](https://coveralls.io/repos/github/vietjtnguyen/argagg/badge.svg?branch=master)](https://coveralls.io/github/vietjtnguyen/argagg?branch=master) |
+| `dev` | ![Build Status](https://api.travis-ci.org/vietjtnguyen/argagg.svg?branch=dev) | [![Coverage Status](https://coveralls.io/repos/github/vietjtnguyen/argagg/badge.svg?branch=dev)](https://coveralls.io/github/vietjtnguyen/argagg?branch=dev) |
 
-This is yet another C++ command line argument/option parser. It was written as a simple and idiomatic alternative to other frameworks like [getopt][], [Boost program options][], [TCLAP][], and others. The goal is to achieve the majority of argument parsing needs in a simple manner with an easy to use API. It operates as a single pass over all arguments, recognizing flags prefixed by `-` (short) or `--` (long) and aggregating them into easy to access structures with lots of convenience functions.
+This is yet another C++ command line argument/option parser. It was written as a simple and idiomatic alternative to other frameworks like [getopt][], [Boost program options][], [TCLAP][], and others. The goal is to achieve the majority of argument parsing needs in a simple manner with an easy to use API. It operates as a single pass over all arguments, recognizing flags prefixed by `-` (short) or `--` (long) and aggregating them into easy to access structures with lots of convenience functions. It defers processing types until you access them, so the result structures end up just being pointers into the original command line argument C-strings.
 
 [getopt]: https://www.gnu.org/software/libc/manual/html_node/Getopt.html#Getopt
 [Boost program options]: http://www.boost.org/doc/libs/release/libs/program_options/

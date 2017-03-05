@@ -1096,9 +1096,9 @@ struct parser {
   /**
    * @brief
    * Through strict interpretation of pointer casting rules, despite this being
-   * a safe operation, C++ doesn't allow implicit casts from "char**" to "const
-   * char**" so here's an overload that performs a const_cast, which is
-   * typically frowned upon but is safe here.
+   * a safe operation, C++ doesn't allow implicit casts from <tt>char**</tt> to
+   * <tt>const char**</tt> so here's an overload that performs a const_cast,
+   * which is typically frowned upon but is safe here.
    */
   parser_results parse(int argc, char** argv) const
   {
@@ -1113,8 +1113,9 @@ namespace convert {
 
   /**
    * @brief
-   * Templated function for conversion to T using the std::strtol() function.
-   * This is used for anything long length or shorter (long, int, short, char).
+   * Templated function for conversion to T using the @ref std::strtol()
+   * function.  This is used for anything long length or shorter (long, int,
+   * short, char).
    */
   template <typename T>
   T long_(const char* arg)
@@ -1131,8 +1132,9 @@ namespace convert {
 
   /**
    * @brief
-   * Templated function for conversion to T using the std::strtoll() function.
-   * This is used for anything long long length or shorter (long long).
+   * Templated function for conversion to T using the @ref std::strtoll()
+   * function.  This is used for anything long long length or shorter (long
+   * long).
    */
   template <typename T>
   T long_long_(const char* arg)

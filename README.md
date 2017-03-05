@@ -104,6 +104,49 @@ One can also specify `--` on the command line in order to treat all following ar
 
 For a more detailed treatment take a look at the [examples](./examples) or [test cases](./test).
 
+Mental Model
+------------
+
+The parser just returns a structure of pointers to the C-strings in the original `argv` array. The `parse()` method returns a `parser_results` object which has two things: position arguments and option results. The position arguments are just a `std::vector` of `const char*`. The option results are a mapping from option name (`std::string`) to `option_results` objects. The `option_results` objects are just an `std::vector` of `option_result` objects. Each instance of an `object_result` represents the option showing up on the command line. If there was an argument associated with it then the `object_result`'s `arg` member will *not* be `nullptr`.
+
+Consider the following command:
+
+```sh
+gcc -g -I/usr/local/include -I. -o test main.o foo.o -L/usr/local/lib -lz bar.o -lpng
+```
+
+This would produce a structure like follows, written in psuedo-YAML, where each string is actually a `const char*` pointing to some part of a string in the original `argv` array:
+
+```yaml
+parser_results:
+  program: "gcc"
+  pos: ["main.o", "foo.o", "bar.o"]
+  options:
+    version:
+    debug:
+      all:
+      - arg: null
+    include_path:
+      all:
+      - arg: "/usr/local/include"
+      - arg: "."
+    library_path:
+      all:
+      - arg: "/usr/local/lib"
+    library:
+      all:
+      - arg: "z"
+      - arg: "png"
+    output:
+      all:
+      - arg: "test"
+```
+
+Conversion to types occurs at the very end when the `as<T>()` API is used. Up to that point `argagg` is just dealing with C-strings.
+
+API Reference
+-------------
+
 Doxygen documentation can be found [here](https://vietjtnguyen.github.io/argagg/latest/).
 
 Installation

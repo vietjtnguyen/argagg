@@ -122,7 +122,7 @@ For a more detailed treatment take a look at the [examples](./examples) or [test
 Mental Model
 ------------
 
-The parser just returns a structure of pointers to the C-strings in the original `argv` array. The `parse()` method returns a `parser_results` object which has two things: position arguments and option results. The position arguments are just a `std::vector` of `const char*`. The option results are a mapping from option name (`std::string`) to `option_results` objects. The `option_results` objects are just an `std::vector` of `option_result` objects. Each instance of an `object_result` represents the option showing up on the command line. If there was an argument associated with it then the `object_result`'s `arg` member will *not* be `nullptr`.
+The parser just returns a structure of pointers to the C-strings in the original `argv` array. The `parse()` method returns a `parser_results` object which has two things: position arguments and option results. The position arguments are just a `std::vector` of `const char*`. The option results are a mapping from option name (`std::string`) to `option_results` objects. The `option_results` objects are just an `std::vector` of `option_result` objects. Each instance of an `option_result` represents the option showing up on the command line. If there was an argument associated with it then the `option_result`'s `arg` member will *not* be `nullptr`.
 
 Consider the following command:
 

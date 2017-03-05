@@ -2,7 +2,7 @@ Argument Aggregator
 ===================
 
 | Branch | Build | Coverage |
-| --- | --- |
+| --- | --- | --- |
 | `master` | ![Build Status](https://api.travis-ci.org/vietjtnguyen/argagg.svg?branch=master) | | [![Coverage Status](https://coveralls.io/repos/github/vietjtnguyen/argagg/badge.svg?branch=master)](https://coveralls.io/github/vietjtnguyen/argagg?branch=master) |
 | `dev` | ![Build Status](https://api.travis-ci.org/vietjtnguyen/argagg.svg?branch=dev) | [![Coverage Status](https://coveralls.io/repos/github/vietjtnguyen/argagg/badge.svg?branch=dev)](https://coveralls.io/github/vietjtnguyen/argagg?branch=dev) |
 

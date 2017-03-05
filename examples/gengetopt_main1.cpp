@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   // Define our usage text.
   ostringstream usage;
   usage
-    << "Joins all positional arguments together with a separator" << endl
+    << argv[0] << " 2.0" << endl
     << endl
     << "Usage: " << argv[0] << " [OPTIONS]... [FILES]..." << endl
     << endl;

@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:           argagg
-Version:        0.2.2
+Version:        0.3.0
 Release:        3%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
@@ -19,7 +19,9 @@ program options, TCLAP, and others. The goal is to achieve the majority of
 argument parsing needs in a simple manner with an easy to use API. It operates
 as a single pass over all arguments, recognizing flags prefixed by `-` (short)
 or `--` (long) and aggregating them into easy to access structures with lots of
-convenience functions.
+convenience functions. It defers processing types until you access them, so the
+result structures end up just being pointers into the original command line
+argument C-strings.
 
 %package        devel
 Summary:        Development files for %{name}

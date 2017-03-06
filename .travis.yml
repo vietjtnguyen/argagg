@@ -10,7 +10,8 @@ script:
   - cmake --build .
   - ctest -V
 after_success:
+  - pwd
   - lcov -d . -c -o coverage.info
-  - lcov -r coverage.info "/usr*" "$(readlink -f test)/*" -o coverage.info
+  - lcov -r coverage.info "/usr*" "test/*" -o coverage.info
   - lcov -l coverage.info
   - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info

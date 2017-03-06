@@ -32,6 +32,7 @@
 #define ARGAGG_ARGAGG_ARGAGG_HPP
 
 #include <algorithm>
+#include <array>
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
@@ -793,7 +794,7 @@ struct parser_map {
 parser_map validate_definitions(
   const std::vector<definition>& definitions)
 {
-  parser_map map {{nullptr}, {}};
+  parser_map map {{{nullptr}}, {}};
 
   for (auto& defn : definitions) {
 
@@ -892,7 +893,7 @@ struct parser {
     for (const auto& defn : this->definitions) {
       option_results opt_results {{}};
       results.options.insert(
-        std::move(std::make_pair(defn.name, opt_results)));
+        std::make_pair(defn.name, opt_results));
     }
 
     // Don't start off ignoring flags. We only ignore flags after a -- shows up

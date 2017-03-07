@@ -1,8 +1,8 @@
 %global debug_package %{nil}
 
 Name:           argagg
-Version:        0.3.1
-Release:        3%{?dist}
+Version:        0.4.0
+Release:        1%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
 License:        MIT

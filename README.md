@@ -179,8 +179,8 @@ Quick Reference
   - `std::vector<const char*> pos`
 - `definition`
   - `const char* name`
-  - `std::vector<const char*> flag`
-  - `const char* help`
+  - `std::vector<std::string> flag`
+  - `std::string help`
   - `unsigned int num_args`
 - `parser_map`
   - `std::array<const definition*, 256> short_map`

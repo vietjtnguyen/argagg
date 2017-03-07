@@ -512,13 +512,13 @@ struct definition {
    * List of strings to match that correspond to this option. Should be fully
    * specified with hyphens (e.g. "-v" or "--verbose").
    */
-  std::vector<const char*> flags;
+  std::vector<std::string> flags;
 
   /**
    * @brief
    * Help string for this option.
    */
-  const char* help;
+  std::string help;
 
   /**
    * @brief
@@ -806,14 +806,14 @@ parser_map validate_definitions(
 
     for (auto& flag : defn.flags) {
 
-      if (!is_valid_flag_definition(flag)) {
+      if (!is_valid_flag_definition(flag.data())) {
         std::ostringstream msg;
         msg << "flag \"" << flag << "\" specified for option \"" << defn.name
             << "\" is invalid";
         throw invalid_flag(msg.str());
       }
 
-      if (flag_is_short(flag)) {
+      if (flag_is_short(flag.data())) {
         const int short_flag_letter = flag[1];
         const auto existing_short_flag = map.short_map[short_flag_letter];
         bool short_flag_already_exists = (existing_short_flag != nullptr);

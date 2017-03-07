@@ -1,3 +1,46 @@
+0.3.2
+-----
+
+- Fixed compilation error with clang
+
+0.3.1
+-----
+
+- Updated documentation
+- Added greedy processing examples and tests
+
+0.3.0
+-----
+
+- Added support for POSIX command line option behaviors
+  - Options (short) start with a hyphen (-) and long options start with two
+    hyphens (--) - Multiple short options can be grouped following a single
+    hyphen
+    - -a -b -c can also be written -abc or -bac, etc.
+  - Option names are alpha numeric but long options may include hyphens
+    - -v is valid, --ftest-coverage is valid
+    - -# is not valid, --bad$option is not valid
+  - Short options can be provided arguments with or without whitespace
+    delimiters
+    - -I /usr/local/include and -I/usr/local/include are equally valid
+  - Long options can be provided arguments with whitespace or equal sign
+    delimiters
+    - --output test.txt and --output=test.txt are equivalent
+  - Options and positional arguments can be interleaved
+  - -- can be specified to treat all following arguments as positional
+    arguments (i.e. not options)
+- Added option definition validation
+  - Checks for malformed flags
+  - Checks for duplicate flags
+- Added conversion functions for rest of fundamental integer types
+- Built in conversion functions now utilize strtol(), strtoll(), strtof(), and
+  strtod()
+- Added char** argv overload of argagg::parser::parse()
+- Removed argagg::optional, options now either receive arguments or they don't
+- Added example derived from gengetopt documentation
+- Expanded unit test coverage to 98%
+- Added coveralls integration for code coverage reports
+
 0.2.2
 -----
 

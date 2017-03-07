@@ -20,7 +20,7 @@ This is yet another C++ command line argument/option parser. It was written as a
   - `-I /usr/local/include` and `-I/usr/local/include` are equally valid
 - Long options can be provided arguments with whitespace or equal sign delimiters
   - `--output test.txt` and `--output=test.txt` are equivalent
-- Options and positional arguments can be 
+- Options and positional arguments can be interleaved
 - `--` can be specified to treat all following arguments as positional arguments (i.e. not options)
 
 [getopt]: https://www.gnu.org/software/libc/manual/html_node/Getopt.html#Getopt
@@ -47,7 +47,7 @@ argagg::parser argparser {{
 
 An option is specified by four things: the name of the option, the strings that activate the option (flags), the option's help message, and the number of arguments the option expects.
 
-With the parser defined you actually parse the arguments by calling the `argagg::parser::parse()` method. If there are any problems then either an `argagg::option_lacks_argument_error` or `argagg::unexpected_option_error` exception are thrown.
+With the parser defined you actually parse the arguments by calling the `argagg::parser::parse()` method. If there are any problems an exception is throw.
 
 ```cpp
 argagg::parser_results args;
@@ -163,6 +163,37 @@ API Reference
 -------------
 
 Doxygen documentation can be found [here](https://vietjtnguyen.github.io/argagg/latest/).
+
+Quick Reference
+---------------
+
+## Structs
+
+- `option_result`
+  - `const char* arg`
+- `option_results`
+  - `std::vector<option_result> all`
+- `parser_results`
+  - `const char* program`
+  - `std::unordered_map<std::string, option_results> options`
+  - `std::vector<const char*> pos`
+- `definition`
+  - `const char* name`
+  - `std::vector<const char*> flag`
+  - `const char* help`
+  - `unsigned int num_args`
+- `parser_map`
+  - `std::array<const definition*, 256> short_map`
+  - `std::unordered_map<std::string, const definition*> long_map`
+- `parser`
+  - `std::vector<definition> definitions`
+
+## Exceptions
+
+- `unexpected_argument_error`
+- `unexpected_option_error`
+- `option_lacks_argument_error`
+- `invalid_flag`
 
 Installation
 ------------

@@ -16,8 +16,8 @@
 
 - Added support for POSIX command line option behaviors
   - Options (short) start with a hyphen (-) and long options start with two
-    hyphens (--) - Multiple short options can be grouped following a single
-    hyphen
+    hyphens (--)
+  - Multiple short options can be grouped following a single hyphen
     - -a -b -c can also be written -abc or -bac, etc.
   - Option names are alpha numeric but long options may include hyphens
     - -v is valid, --ftest-coverage is valid

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 
+static std::ofstream g_dev_null;
+
 int main(
   int argc,
   const char** argv)
@@ -86,10 +88,9 @@ int main(
   // Set up our verbose log output stream selector that selects stderr if the
   // requested log level is lower than or equal to the currently set verbose
   // level.
-  ofstream dev_null;
-  dev_null.open("/dev/null"); // portable? eh... simple? yes!
+  g_dev_null.open("/dev/null"); // portable? eh... simple? yes!
   auto vlog = [&](int level) -> ostream& {
-      return verbose_level >= level ? cerr : dev_null;
+      return verbose_level >= level ? cerr : g_dev_null;
     };
 
   vlog(1) << "verbose log level: " << verbose_level << endl;

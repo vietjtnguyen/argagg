@@ -794,7 +794,8 @@ struct parser_map {
 parser_map validate_definitions(
   const std::vector<definition>& definitions)
 {
-  parser_map map {{{nullptr}}, {}};
+  std::unordered_map<std::string, const definition*> long_map;
+  parser_map map {{{nullptr}}, std::move(long_map)};
 
   for (auto& defn : definitions) {
 

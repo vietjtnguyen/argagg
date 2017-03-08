@@ -887,7 +887,8 @@ struct parser {
     // name (assumed to be the first command line argument) and initialize
     // everything else as empty.
     std::unordered_map<std::string, option_results> options {};
-    parser_results results {argv[0], std::move(options), {}};
+    std::vector<const char*> pos;
+    parser_results results {argv[0], std::move(options), std::move(pos)};
 
     // Add an empty option result for each definition.
     for (const auto& defn : this->definitions) {

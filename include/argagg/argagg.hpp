@@ -884,7 +884,7 @@ struct parser {
     // parsing that you know the definitions are complete.
     parser_map map = validate_definitions(this->definitions);
 
-		// Initialize the parser results that we'll be returning. Store the program
+    // Initialize the parser results that we'll be returning. Store the program
     // name (assumed to be the first command line argument) and initialize
     // everything else as empty.
     std::unordered_map<std::string, option_results> options {};

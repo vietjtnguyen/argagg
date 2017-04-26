@@ -23,6 +23,8 @@ This is yet another C++ command line argument/option parser. It was written as a
 - Options and positional arguments can be interleaved
 - `--` can be specified to treat all following arguments as positional arguments (i.e. not options)
 
+Help message formatting is provided via the `fmt` utility on {Li,U}nix systems.
+
 [getopt]: https://www.gnu.org/software/libc/manual/html_node/Getopt.html#Getopt
 [Boost program options]: http://www.boost.org/doc/libs/release/libs/program_options/
 [TCLAP]: http://tclap.sourceforge.net/
@@ -87,6 +89,17 @@ if (args["help"]) {
   //         delimiter (default: ,)
   //     -n, --num
   //         number
+  return EXIT_SUCCESS;
+}
+```
+
+A special output stream, `argagg::fmt_ostream`, is provided that will run the usage and help through `fmt` for nice word wrapping (see [`./examples/joinargs.cpp`](./examples/joinargs.cpp) for a better example).
+
+```cpp
+if (args["help"]) {
+  argagg::fmt_ostream fmt(std::cerr);
+  fmt << "Usage: program [options] ARG1 ARG2" << std::endl
+      << argparser;
   return EXIT_SUCCESS;
 }
 ```

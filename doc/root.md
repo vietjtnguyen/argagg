@@ -54,6 +54,15 @@ That help message is only for the flags. If you want a usage message it's up to 
       return EXIT_SUCCESS;
     }
 
+A special output stream, argagg::fmt_ostream, is provided that will run the usage and help through `fmt` for nice word wrapping (see `./examples/joinargs.cpp` for a better example).
+
+    if (args["help"]) {
+      argagg::fmt_ostream fmt(std::cerr);
+      fmt << "Usage: program [options] ARG1 ARG2" << std::endl
+          << argparser;
+      return EXIT_SUCCESS;
+    }
+
 Generally argagg tries to do a minimal amount of work to leave most of the control with the user.
 
 If you want to get an option argument but fallback on a default value if it doesn't exist then you can use the argagg::option_results::as() API and provide a default value.

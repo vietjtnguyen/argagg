@@ -1,10 +1,16 @@
 0.4.3
 -----
 
-- Added argagg::fmt_string() to format a string using the fmt program
+- Added argagg::fmt_string() to format a string using the fmt program when
+  compiling on a __unix__ platform. Degrades to an identity function when not
+  on a __unix__ platform.
 - Added argagg::fmt_ostream as a convenience stream that will stream the
   formatted string to the referenced final std::ostream when the
   argagg::fmt_ostream destructs
+- Fixed bug when compiling with clang where the non-template implicit bool
+  operator was being selected when implicitly converting to an integer. By
+  making the implicit bool operator a specialization of the templated implicit
+  conversion operator the compiler should now select the correct overload.
 
 0.4.2
 -----

@@ -76,20 +76,18 @@ int main(
   try {
     args = argparser.parse(argc, argv);
   } catch (const std::exception& e) {
-    ostringstream help;
+    argagg::fmt_ostream help(cerr);
     help << usage.str() << argparser << endl
          << "Encountered exception while parsing arguments: " << e.what()
          << endl;
-    cerr << argagg::fmt_string(help.str()) << endl;;
     return EXIT_FAILURE;
   }
 
   // If the help flag was specified then spit out the usage and help text and
   // exit.
   if (args["help"]) {
-    ostringstream help;
+    argagg::fmt_ostream help(cerr);
     help << usage.str() << argparser;
-    cerr << argagg::fmt_string(help.str()) << endl;;
     return EXIT_SUCCESS;
   }
 

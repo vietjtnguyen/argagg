@@ -34,7 +34,7 @@
 #ifdef __unix__
 #include <stdio.h>
 #include <unistd.h>
-#endif
+#endif // #ifdef __unix__
 
 #include <algorithm>
 #include <array>
@@ -47,6 +47,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 
@@ -597,6 +598,53 @@ struct parser {
 
 /**
  * @brief
+ * A convenience output stream that will accumulate what is streamed to it and
+ * then, on destruction, format the accumulated string using the fmt program
+ * (via the argagg::fmt_string() function) to the provided std::ostream.
+ *
+ * Example use:
+ *
+ * @code
+ * {
+ *   argagg::fmt_ostream f(std::cerr);
+ *   f << "Usage: " << really_long_string << std::endl;
+ * } // on destruction here the formatted string will be streamed to std::cerr
+ * @endcode
+ *
+ * @note
+ * This is only defined if the <tt>__unix__</tt> preprocessor definition
+ * exists since it relies on the POSIX API for forking, executing a process,
+ * and reading/writing to/from file descriptors.
+ */
+struct fmt_ostream : public std::ostringstream {
+
+  /**
+   * @brief
+   * Reference to the final output stream that the formatted string will be
+   * streamed to.
+   */
+  std::ostream& output;
+
+  /**
+   * @brief
+   * Construct to output to the provided output stream when this object is
+   * destroyed.
+   */
+  fmt_ostream(std::ostream& output);
+
+  /**
+   * @brief
+   * Special destructor that will format the accumulated string using fmt (via
+   * the argagg::fmt_string() function) and stream it to the std::ostream
+   * stored.
+   */
+  ~fmt_ostream();
+
+};
+
+
+/**
+ * @brief
  * Processes the provided string using the fmt util and returns the resulting
  * output as a string. Not the most efficient (in time or space) but gets the
  * job done.
@@ -609,7 +657,7 @@ struct parser {
 std::string fmt_string(const std::string& s);
 
 
-#endif
+#endif // #ifdef __unix__
 
 
 } // namespace argagg
@@ -1419,6 +1467,21 @@ namespace convert {
 
 #ifdef __unix__
 
+
+inline
+fmt_ostream::fmt_ostream(std::ostream& output)
+: std::ostringstream(), output(output)
+{
+}
+
+
+inline
+fmt_ostream::~fmt_ostream()
+{
+  output << fmt_string(this->str());
+}
+
+
 inline
 std::string fmt_string(const std::string& s)
 {
@@ -1469,7 +1532,7 @@ std::string fmt_string(const std::string& s)
 }
 
 
-#endif
+#endif // #ifdef __unix__
 
 
 } // namespace argagg

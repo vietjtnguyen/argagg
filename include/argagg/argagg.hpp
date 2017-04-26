@@ -239,16 +239,15 @@ struct option_result {
    * Since we have the argagg::option_result::as() API we might as well alias
    * it as an implicit conversion operator. This performs implicit conversion
    * using the argagg::option_result::as() method.
+   *
+   * @note
+   * An implicit boolean conversion specialization exists which returns false
+   * if there is no argument for this single option instance and true
+   * otherwise. This specialization DOES NOT convert the argument to a bool. If
+   * you need to convert the argument to a bool then use the as() API.
    */
   template <typename T>
   operator T () const;
-
-  /**
-   * @brief
-   * Implicit boolean conversion function which returns true if there is an
-   * argument for this single option instance.
-   */
-  operator bool () const;
 
 };
 
@@ -317,16 +316,15 @@ struct option_results {
    * Since we have the option_results::as() API we might as well alias
    * it as an implicit conversion operator. This performs implicit conversion
    * using the option_results::as() method.
+   *
+   * @note
+   * An implicit boolean conversion specialization exists which returns false
+   * if there is no argument for this single option instance and true
+   * otherwise. This specialization DOES NOT convert the argument to a bool. If
+   * you need to convert the argument to a bool then use the as() API.
    */
   template <typename T>
   operator T () const;
-
-  /**
-   * @brief
-   * Implicit boolean conversion function which returns true if there is at
-   * least one parser result for this definition.
-   */
-  operator bool () const;
 
 };
 
@@ -740,7 +738,7 @@ option_result::operator T () const
 }
 
 
-inline
+template <> inline
 option_result::operator bool () const
 {
   return this->arg != nullptr;
@@ -795,7 +793,7 @@ option_results::operator T () const
 }
 
 
-inline
+template <> inline
 option_results::operator bool () const
 {
   return this->all.size() > 0;
@@ -1356,8 +1354,8 @@ namespace convert {
    * function.  This is used for anything long length or shorter (long, int,
    * short, char).
    */
-  template <typename T>
-  inline T long_(const char* arg)
+  template <typename T> inline
+  T long_(const char* arg)
   {
     char* garbage = nullptr;
     errno = 0;
@@ -1375,8 +1373,8 @@ namespace convert {
    * function.  This is used for anything long long length or shorter (long
    * long).
    */
-  template <typename T>
-  inline T long_long_(const char* arg)
+  template <typename T> inline
+  T long_long_(const char* arg)
   {
     char* garbage = nullptr;
     errno = 0;
@@ -1389,8 +1387,8 @@ namespace convert {
 
 
 #define DEFINE_CONVERSION_FROM_LONG_(TYPE) \
-  template <> \
-  inline TYPE arg(const char* arg) \
+  template <> inline \
+  TYPE arg(const char* arg) \
   { \
     return long_<TYPE>(arg); \
   }
@@ -1409,8 +1407,8 @@ namespace convert {
 
 
 #define DEFINE_CONVERSION_FROM_LONG_LONG_(TYPE) \
-  template <> \
-  inline TYPE arg(const char* arg) \
+  template <> inline \
+  TYPE arg(const char* arg) \
   { \
     return long_long_<TYPE>(arg); \
   }
@@ -1421,8 +1419,15 @@ namespace convert {
 #undef DEFINE_CONVERSION_FROM_LONG_LONG_
 
 
-  template <>
-  inline float arg(const char* arg)
+  template <> inline
+  bool arg(const char* arg)
+  {
+    return static_cast<bool>(argagg::convert::arg<int>(arg));
+  }
+
+
+  template <> inline
+  float arg(const char* arg)
   {
     char* garbage = nullptr;
     errno = 0;
@@ -1434,8 +1439,8 @@ namespace convert {
   }
 
 
-  template <>
-  inline double arg(const char* arg)
+  template <> inline
+  double arg(const char* arg)
   {
     char* garbage = nullptr;
     errno = 0;
@@ -1447,15 +1452,15 @@ namespace convert {
   }
 
 
-  template <>
-  inline const char* arg(const char* arg)
+  template <> inline
+  const char* arg(const char* arg)
   {
     return arg;
   }
 
 
-  template <>
-  inline std::string arg(const char* arg)
+  template <> inline
+  std::string arg(const char* arg)
   {
     return std::string(arg);
   }

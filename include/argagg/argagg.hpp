@@ -1286,7 +1286,7 @@ namespace convert {
    * short, char).
    */
   template <typename T>
-  T long_(const char* arg)
+  inline T long_(const char* arg)
   {
     char* garbage = nullptr;
     errno = 0;
@@ -1305,7 +1305,7 @@ namespace convert {
    * long).
    */
   template <typename T>
-  T long_long_(const char* arg)
+  inline T long_long_(const char* arg)
   {
     char* garbage = nullptr;
     errno = 0;
@@ -1319,7 +1319,7 @@ namespace convert {
 
 #define DEFINE_CONVERSION_FROM_LONG_(TYPE) \
   template <> \
-  TYPE arg(const char* arg) \
+  inline TYPE arg(const char* arg) \
   { \
     return long_<TYPE>(arg); \
   }
@@ -1339,7 +1339,7 @@ namespace convert {
 
 #define DEFINE_CONVERSION_FROM_LONG_LONG_(TYPE) \
   template <> \
-  TYPE arg(const char* arg) \
+  inline TYPE arg(const char* arg) \
   { \
     return long_long_<TYPE>(arg); \
   }
@@ -1351,7 +1351,7 @@ namespace convert {
 
 
   template <>
-  float arg(const char* arg)
+  inline float arg(const char* arg)
   {
     char* garbage = nullptr;
     errno = 0;
@@ -1364,7 +1364,7 @@ namespace convert {
 
 
   template <>
-  double arg(const char* arg)
+  inline double arg(const char* arg)
   {
     char* garbage = nullptr;
     errno = 0;
@@ -1377,14 +1377,14 @@ namespace convert {
 
 
   template <>
-  const char* arg(const char* arg)
+  inline const char* arg(const char* arg)
   {
     return arg;
   }
 
 
   template <>
-  std::string arg(const char* arg)
+  inline std::string arg(const char* arg)
   {
     return std::string(arg);
   }

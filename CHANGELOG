@@ -2,6 +2,9 @@
 -----
 
 - Added argagg::fmt_string() to format a string using the fmt program
+- Added argagg::fmt_ostream as a convenience stream that will stream the
+  formatted string to the referenced final std::ostream when the
+  argagg::fmt_ostream destructs
 
 0.4.2
 -----

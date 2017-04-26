@@ -31,6 +31,11 @@
 #ifndef ARGAGG_ARGAGG_ARGAGG_HPP
 #define ARGAGG_ARGAGG_ARGAGG_HPP
 
+#ifdef __unix__
+#include <stdio.h>
+#include <unistd.h>
+#endif
+
 #include <algorithm>
 #include <array>
 #include <cstdlib>
@@ -585,6 +590,26 @@ struct parser {
   parser_results parse(int argc, char** argv) const;
 
 };
+
+
+#ifdef __unix__
+
+
+/**
+ * @brief
+ * Processes the provided string using the fmt util and returns the resulting
+ * output as a string. Not the most efficient (in time or space) but gets the
+ * job done.
+ *
+ * @note
+ * This is only defined if the <tt>__unix__</tt> preprocessor definition
+ * exists since it relies on the POSIX API for forking, executing a process,
+ * and reading/writing to/from file descriptors.
+ */
+std::string fmt_string(const std::string& s);
+
+
+#endif
 
 
 } // namespace argagg
@@ -1390,6 +1415,61 @@ namespace convert {
   }
 
 }
+
+
+#ifdef __unix__
+
+inline
+std::string fmt_string(const std::string& s)
+{
+  constexpr int read_end = 0;
+  constexpr int write_end = 1;
+
+  // TODO (vnguyen): This function overall needs to handle possible error
+  // returns from the various syscalls.
+
+  int read_pipe[2];
+  int write_pipe[2];
+  pipe(read_pipe);
+  pipe(write_pipe);
+
+  auto parent_pid = fork();
+  bool is_fmt_proc = (parent_pid == 0);
+  if (is_fmt_proc) {
+    dup2(write_pipe[read_end], STDIN_FILENO);
+    dup2(read_pipe[write_end], STDOUT_FILENO);
+    close(write_pipe[read_end]);
+    close(write_pipe[write_end]);
+    close(read_pipe[read_end]);
+    close(read_pipe[write_end]);
+    const char* argv[] = {"fmt", NULL};
+    execvp(const_cast<char*>(argv[0]), const_cast<char**>(argv));
+  }
+
+  close(write_pipe[read_end]);
+  close(read_pipe[write_end]);
+  auto fmt_write_fd = write_pipe[write_end];
+  write(fmt_write_fd, s.c_str(), s.length());
+  close(fmt_write_fd);
+
+  auto fmt_read_fd = read_pipe[read_end];
+  std::ostringstream os;
+  char buf[64];
+  while (true) {
+    auto read_count = read(
+      fmt_read_fd, reinterpret_cast<void*>(buf), sizeof(buf));
+    if (read_count <= 0) {
+      break;
+    }
+    os.write(buf, static_cast<std::streamsize>(read_count));
+  }
+  close(fmt_read_fd);
+
+  return os.str();
+}
+
+
+#endif
 
 
 } // namespace argagg

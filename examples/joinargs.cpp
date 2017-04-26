@@ -46,6 +46,15 @@ int main(
         "verbose", {"-v", "--verbose"},
         "increases verbosity", 0},
       {
+        "lorem-ipsum", {"--lorem-ipsum"},
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
+        "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim "
+        "ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut "
+        "aliquip ex ea commodo consequat. Duis aute irure dolor in "
+        "reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla "
+        "pariatur. Excepteur sint occaecat cupidatat non proident, sunt in "
+        "culpa qui officia deserunt mollit anim id est laborum.", 0},
+      {
         "sep", {"-s", "--sep"},
         "separator (default ',')", 1},
       {
@@ -67,16 +76,20 @@ int main(
   try {
     args = argparser.parse(argc, argv);
   } catch (const std::exception& e) {
-    cerr << usage.str() << argparser << endl
+    ostringstream help;
+    help << usage.str() << argparser << endl
          << "Encountered exception while parsing arguments: " << e.what()
          << endl;
+    cerr << argagg::fmt_string(help.str()) << endl;;
     return EXIT_FAILURE;
   }
 
   // If the help flag was specified then spit out the usage and help text and
   // exit.
   if (args["help"]) {
-    cerr << usage.str() << argparser;
+    ostringstream help;
+    help << usage.str() << argparser;
+    cerr << argagg::fmt_string(help.str()) << endl;;
     return EXIT_SUCCESS;
   }
 

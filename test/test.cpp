@@ -927,3 +927,28 @@ TEST_CASE("write options help")
   // Just checking for no exceptions for now.
   std::cout << parser;
 }
+
+
+#ifdef __unix__
+TEST_CASE("fmt_string")
+{
+  std::string test(
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
+    "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim "
+    "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea "
+    "commodo consequat. Duis aute irure dolor in reprehenderit in voluptate "
+    "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
+    "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
+    "mollit anim id est laborum.");
+  std::string test_formatted = argagg::fmt_string(test);
+  std::string expected_output(
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod\n"
+    "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim\n"
+    "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea\n"
+    "commodo consequat. Duis aute irure dolor in reprehenderit in voluptate\n"
+    "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat\n"
+    "cupidatat non proident, sunt in culpa qui officia deserunt mollit anim\n"
+    "id est laborum.\n");
+  CHECK(test_formatted == expected_output);
+}
+#endif

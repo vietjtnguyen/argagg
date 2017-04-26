@@ -1,3 +1,8 @@
+0.4.3
+-----
+
+- Added argagg::fmt_string() to format a string using the fmt program
+
 0.4.2
 -----
 

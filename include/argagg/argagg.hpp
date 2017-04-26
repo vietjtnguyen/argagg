@@ -647,6 +647,9 @@ struct fmt_ostream : public std::ostringstream {
  * output as a string. Not the most efficient (in time or space) but gets the
  * job done.
  *
+ * This function is cowardly so if there are any errors encountered such as a
+ * syscall returning -1 then the input string is returned.
+ *
  * @note
  * This only has formatting behavior if the <tt>__unix__</tt> preprocessor
  * definition is defined since it relies on the POSIX API for forking,
@@ -1496,8 +1499,12 @@ std::string fmt_string(const std::string& s)
 
   int read_pipe[2];
   int write_pipe[2];
-  pipe(read_pipe);
-  pipe(write_pipe);
+  if (pipe(read_pipe) == -1) {
+    return s;
+  }
+  if (pipe(write_pipe) == -1) {
+    return s;
+  }
 
   auto parent_pid = fork();
   bool is_fmt_proc = (parent_pid == 0);
@@ -1515,7 +1522,10 @@ std::string fmt_string(const std::string& s)
   close(write_pipe[read_end]);
   close(read_pipe[write_end]);
   auto fmt_write_fd = write_pipe[write_end];
-  write(fmt_write_fd, s.c_str(), s.length());
+  auto write_result = write(fmt_write_fd, s.c_str(), s.length());
+  if (write_result != static_cast<ssize_t>(s.length())) {
+    return s;
+  }
   close(fmt_write_fd);
 
   auto fmt_read_fd = read_pipe[read_end];

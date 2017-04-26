@@ -929,9 +929,6 @@ TEST_CASE("write options help")
 }
 
 
-#ifdef __unix__
-
-
 static const std::string ipsum =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
   "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam"
@@ -942,6 +939,7 @@ static const std::string ipsum =
   "laborum.";
 
 
+#ifdef __unix__
 static const std::string fmt_ipsum =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod\n"
   "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim\n"
@@ -950,6 +948,9 @@ static const std::string fmt_ipsum =
   "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat\n"
   "cupidatat non proident, sunt in culpa qui officia deserunt mollit anim\n"
   "id est laborum.\n";
+#else // #ifdef __unix__
+static const std::string fmt_ipsum(ipsum);
+#endif // #ifdef __unix__
 
 
 TEST_CASE("fmt_ostream")
@@ -968,6 +969,3 @@ TEST_CASE("fmt_string")
   std::string test_formatted = argagg::fmt_string(ipsum);
   CHECK(test_formatted == fmt_ipsum);
 }
-
-
-#endif // #ifdef __unix__

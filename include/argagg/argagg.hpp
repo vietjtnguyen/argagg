@@ -593,9 +593,6 @@ struct parser {
 };
 
 
-#ifdef __unix__
-
-
 /**
  * @brief
  * A convenience output stream that will accumulate what is streamed to it and
@@ -612,9 +609,12 @@ struct parser {
  * @endcode
  *
  * @note
- * This is only defined if the <tt>__unix__</tt> preprocessor definition
- * exists since it relies on the POSIX API for forking, executing a process,
- * and reading/writing to/from file descriptors.
+ * This only has formatting behavior if the <tt>__unix__</tt> preprocessor
+ * definition is defined since formatting relies on the POSIX API for forking,
+ * executing a process, and reading/writing to/from file descriptors. If that
+ * preprocessor definition is not defined then this class has the same overall
+ * behavior except the output string is not formatted (basically streams
+ * whatever the accumulated string is). See arggg::fmt_string().
  */
 struct fmt_ostream : public std::ostringstream {
 
@@ -650,14 +650,12 @@ struct fmt_ostream : public std::ostringstream {
  * job done.
  *
  * @note
- * This is only defined if the <tt>__unix__</tt> preprocessor definition
- * exists since it relies on the POSIX API for forking, executing a process,
- * and reading/writing to/from file descriptors.
+ * This only has formatting behavior if the <tt>__unix__</tt> preprocessor
+ * definition is defined since it relies on the POSIX API for forking,
+ * executing a process, reading/writing to/from file descriptors, and the
+ * existence of the fmt util.
  */
 std::string fmt_string(const std::string& s);
-
-
-#endif // #ifdef __unix__
 
 
 } // namespace argagg
@@ -1465,9 +1463,6 @@ namespace convert {
 }
 
 
-#ifdef __unix__
-
-
 inline
 fmt_ostream::fmt_ostream(std::ostream& output)
 : std::ostringstream(), output(output)
@@ -1480,6 +1475,9 @@ fmt_ostream::~fmt_ostream()
 {
   output << fmt_string(this->str());
 }
+
+
+#ifdef __unix__
 
 
 inline
@@ -1529,6 +1527,16 @@ std::string fmt_string(const std::string& s)
   close(fmt_read_fd);
 
   return os.str();
+}
+
+
+#else // #ifdef __unix__
+
+
+inline
+std::string fmt_string(const std::string& s)
+{
+  return s;
 }
 
 

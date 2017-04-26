@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:           argagg
-Version:        0.4.3
+Version:        0.4.4
 Release:        1%{?dist}
 Summary:        Simple C++ command line argument/option parser
 
@@ -60,6 +60,9 @@ ctest -V %{?_smp_mflags}
 %doc %{_datadir}/doc/%{name}
 
 %changelog
+* Wed Apr 25 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
+- Updated version to 0.4.4
+
 * Tue Apr 25 2017 Viet The Nguyen <vietjtnguyen@gmail.com>
 - Updated version to 0.4.3
 

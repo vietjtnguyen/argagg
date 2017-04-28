@@ -108,14 +108,7 @@ namespace argagg {
  */
 struct unexpected_argument_error
 : public std::invalid_argument {
-
-  /**
-   * @brief
-   * Explicit constructor which passes "what" string argument to
-   * std::invalid_argument constructor.
-   */
-  explicit unexpected_argument_error(const std::string& what);
-
+  using std::invalid_argument::invalid_argument;
 };
 
 
@@ -127,14 +120,7 @@ struct unexpected_argument_error
  */
 struct unexpected_option_error
 : public std::invalid_argument {
-
-  /**
-   * @brief
-   * Explicit constructor which passes "what" string argument to
-   * std::invalid_argument constructor.
-   */
-  explicit unexpected_option_error(const std::string& what);
-
+  using std::invalid_argument::invalid_argument;
 };
 
 
@@ -146,14 +132,7 @@ struct unexpected_option_error
  */
 struct option_lacks_argument_error
 : public std::invalid_argument {
-
-  /**
-   * @brief
-   * Explicit constructor which passes "what" string argument to
-   * std::invalid_argument constructor.
-   */
-  explicit option_lacks_argument_error(const std::string& what);
-
+  using std::invalid_argument::invalid_argument;
 };
 
 
@@ -166,14 +145,7 @@ struct option_lacks_argument_error
  */
 struct invalid_flag
 : public std::invalid_argument {
-
-  /**
-   * @brief
-   * Explicit constructor which passes "what" string argument to
-   * std::invalid_argument constructor.
-   */
-  explicit invalid_flag(const std::string& what);
-
+  using std::invalid_argument::invalid_argument;
 };
 
 
@@ -675,38 +647,6 @@ std::ostream& operator << (std::ostream& os, const argagg::parser& x);
 
 
 namespace argagg {
-
-
-inline
-unexpected_argument_error::unexpected_argument_error(
-  const std::string& what)
-: std::invalid_argument(what)
-{
-}
-
-
-inline
-unexpected_option_error::unexpected_option_error(
-  const std::string& what)
-: std::invalid_argument(what)
-{
-}
-
-
-inline
-option_lacks_argument_error::option_lacks_argument_error(
-  const std::string& what)
-: std::invalid_argument(what)
-{
-}
-
-
-inline
-invalid_flag::invalid_flag(
-  const std::string& what)
-: std::invalid_argument(what)
-{
-}
 
 
 template <typename T>

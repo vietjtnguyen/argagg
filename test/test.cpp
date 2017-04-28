@@ -869,6 +869,21 @@ TEST_CASE("argument conversions")
     CHECK(x == doctest::Approx(3.141592653f));
     CHECK(y == 2);
   }
+  SUBCASE("exception on bad conversion") {
+    std::vector<const char*> argv {
+      "test", "-n", "not-an-number"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("number") == true);
+    CHECK(args["number"].count() == 1);
+    CHECK_THROWS_AS({
+      args["number"].as<int>();
+    }, std::invalid_argument);
+    CHECK_THROWS_AS({
+      args["number"].as<double>();
+    }, std::invalid_argument);
+    CHECK(args["number"].as<int>(-1) == -1);
+    CHECK(args["number"].as<double>(3.141) == doctest::Approx(3.141));
+  }
 }
 
 

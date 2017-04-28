@@ -218,7 +218,8 @@ struct option_result {
    * given type using the type matched conversion function
    * argagg::convert::arg(). If there was not an argument parsed for this
    * single option instance then a argagg::option_lacks_argument_error
-   * exception is thrown.
+   * exception is thrown. The specific conversion function may throw other
+   * exceptions.
    */
   template <typename T>
   T as() const;
@@ -229,7 +230,8 @@ struct option_result {
    * given type using the type matched conversion function
    * argagg::convert::arg(). If there was not an argument parsed for this
    * single option instance then the provided default value is returned
-   * instead.
+   * instead. If the conversion function throws an exception then it is ignored
+   * and the default value is returned.
    */
   template <typename T>
   T as(const T& t) const;
@@ -722,7 +724,11 @@ template <typename T>
 T option_result::as(const T& t) const
 {
   if (this->arg) {
-    return convert::arg<T>(this->arg);
+    try {
+      return convert::arg<T>(this->arg);
+    } catch (...) {
+      return t;
+    }
   } else {
     // I actually think this will never happen. To call this method you have
     // to access a specific option_result for an option. If there's a
@@ -1360,9 +1366,14 @@ namespace convert {
   template <typename T> inline
   T long_(const char* arg)
   {
-    char* garbage = nullptr;
+    char* endptr = nullptr;
     errno = 0;
-    T ret = static_cast<T>(std::strtol(arg, &garbage, 0));
+    T ret = static_cast<T>(std::strtol(arg, &endptr, 0));
+    if (endptr == arg) {
+      std::ostringstream msg;
+      msg << "unable to convert argument to integer: \"" << arg << "\"";
+      throw std::invalid_argument(msg.str());
+    }
     if (errno == ERANGE) {
       throw std::out_of_range("argument numeric value out of range");
     }
@@ -1379,9 +1390,14 @@ namespace convert {
   template <typename T> inline
   T long_long_(const char* arg)
   {
-    char* garbage = nullptr;
+    char* endptr = nullptr;
     errno = 0;
-    T ret = static_cast<T>(std::strtoll(arg, &garbage, 0));
+    T ret = static_cast<T>(std::strtoll(arg, &endptr, 0));
+    if (endptr == arg) {
+      std::ostringstream msg;
+      msg << "unable to convert argument to integer: \"" << arg << "\"";
+      throw std::invalid_argument(msg.str());
+    }
     if (errno == ERANGE) {
       throw std::out_of_range("argument numeric value out of range");
     }
@@ -1432,9 +1448,14 @@ namespace convert {
   template <> inline
   float arg(const char* arg)
   {
-    char* garbage = nullptr;
+    char* endptr = nullptr;
     errno = 0;
-    float ret = std::strtof(arg, &garbage);
+    float ret = std::strtof(arg, &endptr);
+    if (endptr == arg) {
+      std::ostringstream msg;
+      msg << "unable to convert argument to integer: \"" << arg << "\"";
+      throw std::invalid_argument(msg.str());
+    }
     if (errno == ERANGE) {
       throw std::out_of_range("argument numeric value out of range");
     }
@@ -1445,9 +1466,14 @@ namespace convert {
   template <> inline
   double arg(const char* arg)
   {
-    char* garbage = nullptr;
+    char* endptr = nullptr;
     errno = 0;
-    double ret = std::strtod(arg, &garbage);
+    double ret = std::strtod(arg, &endptr);
+    if (endptr == arg) {
+      std::ostringstream msg;
+      msg << "unable to convert argument to integer: \"" << arg << "\"";
+      throw std::invalid_argument(msg.str());
+    }
     if (errno == ERANGE) {
       throw std::out_of_range("argument numeric value out of range");
     }

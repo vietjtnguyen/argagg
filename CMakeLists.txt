@@ -21,7 +21,7 @@ option(
 
 set(
   ARGAGG_TEST_COMPILE_FLAGS
-  "-g -Wall -Wextra -Werror -std=c++11"
+  "-g -Wall -Wextra -Wpedantic -Werror -std=c++11"
   CACHE STRING "Compiler flags for all project targets"
 )
 

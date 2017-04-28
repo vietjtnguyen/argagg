@@ -1023,7 +1023,7 @@ bool parser_map::known_short_flag(
   const char flag) const
 {
   return this->short_map[flag] != nullptr;
-};
+}
 
 
 inline
@@ -1031,7 +1031,7 @@ const definition* parser_map::get_definition_for_short_flag(
   const char flag) const
 {
   return this->short_map[flag];
-};
+}
 
 
 inline

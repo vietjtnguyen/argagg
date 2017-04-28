@@ -1,3 +1,15 @@
+0.4.5
+-----
+
+- Fixed bug in integer and float argument conversion specializations where
+  invalid conversions were not being correctly handled. Invalid conversions
+  (like "garbage" to float) will now throw an exception. Note though if the
+  as<T>(default) overload is used (with a default value specified) then all
+  exceptions in the conversion result in the default being returned.
+- Changed base exception type for argagg exceptions from std::argument_error to
+  std::runtime_error
+- Now compiles with -Wpedantic
+
 0.4.4
 -----
 

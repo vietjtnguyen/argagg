@@ -80,16 +80,18 @@ int main(int argc, char **argv)
   try {
     args = argparser.parse(argc, argv);
   } catch (const std::exception& e) {
-    cerr << usage.str() << argparser << endl
-         << "Encountered exception while parsing arguments: " << e.what()
-         << endl;
+    argagg::fmt_ostream fmt(cerr);
+    fmt << usage.str() << argparser << endl
+        << "Encountered exception while parsing arguments: " << e.what()
+        << endl;
     return EXIT_FAILURE;
   }
 
   // If the help flag was specified then spit out the usage and help text and
   // exit.
   if (args["help"]) {
-    cerr << usage.str() << argparser;
+    argagg::fmt_ostream fmt(cerr);
+    fmt << usage.str() << argparser;
     return EXIT_SUCCESS;
   }
 

@@ -107,8 +107,8 @@ namespace argagg {
  * argument using the "=" syntax but the option doesn't expect an argument.
  */
 struct unexpected_argument_error
-: public std::invalid_argument {
-  using std::invalid_argument::invalid_argument;
+: public std::runtime_error {
+  using std::runtime_error::runtime_error;
 };
 
 
@@ -119,8 +119,8 @@ struct unexpected_argument_error
  * that has not been defined.
  */
 struct unexpected_option_error
-: public std::invalid_argument {
-  using std::invalid_argument::invalid_argument;
+: public std::runtime_error {
+  using std::runtime_error::runtime_error;
 };
 
 
@@ -131,8 +131,8 @@ struct unexpected_option_error
  * if we simply reach the end of the command line arguments.
  */
 struct option_lacks_argument_error
-: public std::invalid_argument {
-  using std::invalid_argument::invalid_argument;
+: public std::runtime_error {
+  using std::runtime_error::runtime_error;
 };
 
 
@@ -144,8 +144,8 @@ struct option_lacks_argument_error
  * for more details.
  */
 struct invalid_flag
-: public std::invalid_argument {
-  using std::invalid_argument::invalid_argument;
+: public std::runtime_error {
+  using std::runtime_error::runtime_error;
 };
 
 

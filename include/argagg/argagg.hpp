@@ -1381,7 +1381,7 @@ namespace convert {
   template <> inline
   bool arg(const char* arg)
   {
-    return static_cast<bool>(argagg::convert::arg<int>(arg));
+    return argagg::convert::arg<int>(arg) != 0;
   }
 
 

@@ -1,3 +1,12 @@
+0.4.6
+-----
+
+- Added use of argagg::fmt_ostream in gengetopt_main1 example
+- Merged pull request #12
+  -  replace static_cast<bool> w/ non-zero comparison to avoid compiler
+     warnings on MSVC
+- Typo fixes
+
 0.4.5
 -----
 

@@ -950,6 +950,14 @@ TEST_CASE("argument conversions")
       "test", "-n", "3.141592653", "-n", "2"};
     argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     CHECK(args.has_option("number") == true);
+    if (args["number"]) {
+    } else {
+      throw std::runtime_error("implicit boolean conversion failed");
+    }
+    if (!args["number"]) {
+      throw std::runtime_error("unary ! operator failed");
+    } else {
+    }
     CHECK(args["number"].count() == 2);
     float x = args["number"][0];
     int y = args["number"][1];

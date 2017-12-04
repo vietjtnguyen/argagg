@@ -5,7 +5,9 @@
 - Added argagg::csv<T> and a corresponding argument conversion specialization
 - Indexing argagg::parser_results with an option name that does not exist now
   throws an argagg::unknown_option instead of not handling the
-  std::unordered_map::at() std::out_of_range exception (see #20).
+  std::unordered_map::at() std::out_of_range exception (see issue #20).
+- Added explicit unary not operator to argagg::option_result and
+  argagg::option_results (see issue #15)
 
 0.4.6
 -----

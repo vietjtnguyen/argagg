@@ -314,6 +314,13 @@ struct option_result {
   template <typename T>
   operator T () const;
 
+  /**
+   * @brief
+   * Explicitly define a unary not operator that wraps the implicit boolean
+   * conversion speciailization in case the compiler can't do it automatically.
+   */
+  bool operator ! () const;
+
 };
 
 
@@ -390,6 +397,13 @@ struct option_results {
    */
   template <typename T>
   operator T () const;
+
+  /**
+   * @brief
+   * Explicitly define a unary not operator that wraps the implicit boolean
+   * conversion speciailization in case the compiler can't do it automatically.
+   */
+  bool operator ! () const;
 
 };
 
@@ -786,6 +800,13 @@ option_result::operator bool () const
 
 
 inline
+bool option_result::operator ! () const
+{
+  return !static_cast<bool>(*this);
+}
+
+
+inline
 std::size_t option_results::count() const
 {
   return this->all.size();
@@ -837,6 +858,13 @@ template <> inline
 option_results::operator bool () const
 {
   return this->all.size() > 0;
+}
+
+
+inline
+bool option_results::operator ! () const
+{
+  return !static_cast<bool>(*this);
 }
 
 

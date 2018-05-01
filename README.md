@@ -106,7 +106,7 @@ if (args["help"]) {
 
 Generally `argagg` tries to do a minimal amount of work to leave most of the control with the user.
 
-If you want to get an option argument but fallback on a default value if it doesn't exist then you can use the `argagg::option_results::as()` API and provide a default value.
+If you want to get an option argument but fallback on a default value if the option is not specified then you can use the `argagg::option_results::as()` API and provide a default value.
 
 ```cpp
 auto delim = args["delim"].as<std::string>(",");

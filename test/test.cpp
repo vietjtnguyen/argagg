@@ -70,39 +70,112 @@ TEST_CASE("intro example")
       { "num", {"-n", "--num"},
         "number", 1},
     }};
-  std::vector<const char*> argv {
-    "test", "3.141", "foo", "-h", "bar", "300", "-n", "100", "-d", "-", "-",
-    "--", "-b", "--blah"};
-  argagg::parser_results args;
-  try {
-    args = argparser.parse(argv.size(), &(argv.front()));
-  } catch (const std::exception& e) {
-    std::cerr << e.what() << std::endl;
+  SUBCASE("example arguments") {
+    std::vector<const char*> argv {
+      "test", "3.141", "foo",
+      "-h",
+      "bar", "300",
+      "-n", "100",
+      "-d", "-",
+      "-",
+      "--",
+      "-b", "--blah"};
+    argagg::parser_results args;
+    try {
+      args = argparser.parse(argv.size(), &(argv.front()));
+    } catch (const std::exception& e) {
+      std::cerr << e.what() << std::endl;
+    }
+    CHECK(args.has_option("help") == true);
+    CHECK(static_cast<bool>(args["help"]) == true);
+    CHECK(args.has_option("delim") == true);
+    CHECK(static_cast<bool>(args["delim"]) == true);
+    auto delim = args["delim"].as<std::string>(",");
+    CHECK(delim == "-");
+    CHECK(args.has_option("num") == true);
+    CHECK(static_cast<bool>(args["num"]) == true);
+    int x = 0;
+    if (args["num"]) {
+      x = args["num"];
+    }
+    CHECK(x == 100);
+    auto y = 0.0;
+    if (args.pos.size() > 0) {
+      y = args.as<double>(0);
+    }
+    CHECK(y == doctest::Approx(3.141));
+    CHECK(args.as<std::string>(1) == "foo");
+    CHECK(args.as<std::string>(2) == "bar");
+    CHECK(args.as<int>(3) == 300);
+    CHECK(args.as<std::string>(4) == "-");
+    CHECK(args.as<std::string>(5) == "-b");
+    CHECK(args.as<std::string>(6) == "--blah");
   }
-  CHECK(args.has_option("help") == true);
-  CHECK(static_cast<bool>(args["help"]) == true);
-  CHECK(args.has_option("delim") == true);
-  CHECK(static_cast<bool>(args["delim"]) == true);
-  auto delim = args["delim"].as<std::string>(",");
-  CHECK(delim == "-");
-  CHECK(args.has_option("num") == true);
-  CHECK(static_cast<bool>(args["num"]) == true);
-  int x = 0;
-  if (args["num"]) {
-    x = args["num"];
+  SUBCASE("default delim") {
+    std::vector<const char*> argv {
+      "test", "3.141", "foo",
+      "-h",
+      "bar", "300",
+      "-n", "100",
+      "-",
+      "--",
+      "-b", "--blah"};
+    argagg::parser_results args;
+    try {
+      args = argparser.parse(argv.size(), &(argv.front()));
+    } catch (const std::exception& e) {
+      std::cerr << e.what() << std::endl;
+    }
+    CHECK(args.has_option("help") == true);
+    CHECK(static_cast<bool>(args["help"]) == true);
+    CHECK(args.has_option("delim") == false);
+    CHECK(static_cast<bool>(args["delim"]) == false);
+    auto delim = args["delim"].as<std::string>(",");
+    CHECK(delim == ",");
+    CHECK(args.has_option("num") == true);
+    CHECK(static_cast<bool>(args["num"]) == true);
+    int x = 0;
+    if (args["num"]) {
+      x = args["num"];
+    }
+    CHECK(x == 100);
+    auto y = 0.0;
+    if (args.pos.size() > 0) {
+      y = args.as<double>(0);
+    }
+    CHECK(y == doctest::Approx(3.141));
+    CHECK(args.as<std::string>(1) == "foo");
+    CHECK(args.as<std::string>(2) == "bar");
+    CHECK(args.as<int>(3) == 300);
+    CHECK(args.as<std::string>(4) == "-");
+    CHECK(args.as<std::string>(5) == "-b");
+    CHECK(args.as<std::string>(6) == "--blah");
   }
-  CHECK(x == 100);
-  auto y = 0.0;
-  if (args.pos.size() > 0) {
-    y = args.as<double>(0);
+  SUBCASE("underspecified delim") {
+    std::vector<const char*> argv {"test", "-d"};
+    argagg::parser_results args;
+    CHECK_THROWS_AS({
+      args = argparser.parse(argv.size(), &(argv.front()));
+    }, argagg::option_lacks_argument_error);
   }
-  CHECK(y == doctest::Approx(3.141));
-  CHECK(args.as<std::string>(1) == "foo");
-  CHECK(args.as<std::string>(2) == "bar");
-  CHECK(args.as<int>(3) == 300);
-  CHECK(args.as<std::string>(4) == "-");
-  CHECK(args.as<std::string>(5) == "-b");
-  CHECK(args.as<std::string>(6) == "--blah");
+  SUBCASE("no arguments") {
+    std::vector<const char*> argv {"test"};
+    argagg::parser_results args;
+    try {
+      args = argparser.parse(argv.size(), &(argv.front()));
+    } catch (const std::exception& e) {
+      std::cerr << e.what() << std::endl;
+    }
+    CHECK(args.has_option("help") == false);
+    CHECK(static_cast<bool>(args["help"]) == false);
+    CHECK(args.has_option("delim") == false);
+    CHECK(static_cast<bool>(args["delim"]) == false);
+    auto delim = args["delim"].as<std::string>(",");
+    CHECK(delim == ",");
+    CHECK(args.has_option("num") == false);
+    CHECK(static_cast<bool>(args["num"]) == false);
+    CHECK(args.pos.size() == 0);
+  }
 }
 
 

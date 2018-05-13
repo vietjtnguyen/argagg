@@ -33,9 +33,9 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cstdlib>
 #include <cstring>
-#include <cctype>
 #include <iterator>
 #include <ostream>
 #include <sstream>

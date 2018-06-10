@@ -1005,6 +1005,75 @@ TEST_CASE("custom conversion function")
 }
 
 
+// Define a custom conversion function for the test that follows
+struct position3 {
+  double x;
+  double y;
+  double z;
+};
+namespace argagg {
+namespace convert {
+  template <>
+  position3 arg(const char* s)
+  {
+    position3 result {0.0, 0.0, 0.0};
+    if (!parse_next_component(s, result.x)) {
+      // could potentially throw an error if you require that at least two
+      // components exist in the list
+      return result;
+    }
+    if (!parse_next_component(s, result.y)) {
+      return result;
+    }
+    if (!parse_next_component(s, result.z)) {
+      return result;
+    }
+    return result;
+  }
+} // namespace convert
+} // namespace argagg
+
+
+TEST_CASE("parse_next_component() example")
+{
+  argagg::parser argparser {{
+      { "origin", {"-o", "--origin"},
+        "origin as position3 specifieid as a comma separated list of "
+        "components (e.g. '1,2,3')", 1},
+    }};
+  SUBCASE("three components") {
+    std::vector<const char*> argv {
+      "test", "-o", "1.2,3.45,6.789"};
+    argagg::parser_results args = argparser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("origin") == true);
+    auto origin = args["origin"].as<position3>();
+    CHECK(origin.x == 1.2);
+    CHECK(origin.y == 3.45);
+    CHECK(origin.z == 6.789);
+  }
+  SUBCASE("two components") {
+    std::vector<const char*> argv {
+      "test", "-o", "1.2,3.45"};
+    argagg::parser_results args = argparser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("origin") == true);
+    auto origin = args["origin"].as<position3>();
+    CHECK(origin.x == 1.2);
+    CHECK(origin.y == 3.45);
+    CHECK(origin.z == 0.0);
+  }
+  SUBCASE("one component") {
+    std::vector<const char*> argv {
+      "test", "-o", "1.23456789"};
+    argagg::parser_results args = argparser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("origin") == true);
+    auto origin = args["origin"].as<position3>();
+    CHECK(origin.x == 1.23456789);
+    CHECK(origin.y == 0.0);
+    CHECK(origin.z == 0.0);
+  }
+}
+
+
 TEST_CASE("write options help")
 {
   argagg::parser parser {{

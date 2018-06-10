@@ -4,7 +4,7 @@
  * Defines a very simple command line argument parser.
  *
  * @copyright
- * Copyright (c) 2017 Viet The Nguyen
+ * Copyright (c) 2018 Viet The Nguyen
  *
  * @copyright
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -164,6 +164,70 @@ namespace convert {
    */
   template <typename T>
   T arg(const char* arg);
+
+  /**
+   * @brief
+   * A utility function for parsing an argument as a delimited list. To use,
+   * initialize a const char* pointer to the start of argument string. Then
+   * call parse_next_component(), providing that pointer, a mutable reference
+   * to where the parsed argument will go, and optionally the delimiting
+   * character. The argument string will be read up to the next delimiting
+   * character and then converted using
+   * <tt>argagg::convert::arg<decltype(out_arg)>()</tt>. The pointer is then
+   * incremented accordingly. If the delimiting character is no longer found
+   * then false is returned meaning that parsing the list can be considered
+   * finished.
+   *
+   * @code
+     #include <argagg/argagg.hpp>
+
+     struct position3 {
+       double x;
+       double y;
+       double z;
+     };
+
+     namespace argagg {
+     namespace convert {
+       template <>
+       position3 arg(const char* s)
+       {
+         position3 result {0.0, 0.0, 0.0};
+         if (!parse_next_component(s, result.x)) {
+           // could potentially throw an error if you require that at least two
+           // components exist in the list
+           return result;
+         }
+         if (!parse_next_component(s, result.y)) {
+           return result;
+         }
+         if (!parse_next_component(s, result.z)) {
+           return result;
+         }
+         return result;
+       }
+     } // namespace convert
+     } // namespace argagg
+
+     int main(int argc, char** argv)
+     {
+       argagg::parser argparser {{
+          { "origin", {"-o", "--origin"},
+            "origin as position3 specifieid as a comma separated list of "
+            "components (e.g. '1,2,3')", 1},
+        }};
+       argagg::parser_results args = argparser.parse(argc, argv);
+       auto my_position = args["origin"].as<position3>();
+       // ...
+       return 0;
+     }
+     @endcode
+   */
+  template <typename T>
+  bool parse_next_component(
+    const char*& s,
+    T& out_arg,
+    const char delim = ',');
 
 }
 
@@ -1434,7 +1498,29 @@ namespace convert {
     return std::string(arg);
   }
 
-}
+
+  template <typename T>
+  bool parse_next_component(
+    const char*& s,
+    T& out_arg,
+    const char delim)
+  {
+    const char* begin = s;
+    s = std::strchr(s, delim);
+    if (s == nullptr) {
+      std::string arg_str(begin);
+      out_arg = argagg::convert::arg<T>(arg_str.c_str());
+      return false;
+    } else {
+      std::string arg_str(begin, s - begin);
+      out_arg = argagg::convert::arg<T>(arg_str.c_str());
+      s += 1;
+      return true;
+    }
+  }
+
+
+} // namespace convert
 
 
 inline

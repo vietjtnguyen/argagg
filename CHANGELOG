@@ -1,3 +1,8 @@
+0.4.7
+-----
+
+- Added argagg::convert::parse_next_component()
+
 0.4.6
 -----
 

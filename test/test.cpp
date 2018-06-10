@@ -1044,7 +1044,8 @@ TEST_CASE("parse_next_component() example")
   SUBCASE("three components") {
     std::vector<const char*> argv {
       "test", "-o", "1.2,3.45,6.789"};
-    argagg::parser_results args = argparser.parse(argv.size(), &(argv.front()));
+    argagg::parser_results args =
+      argparser.parse(argv.size(), &(argv.front()));
     CHECK(args.has_option("origin") == true);
     auto origin = args["origin"].as<position3>();
     CHECK(origin.x == 1.2);
@@ -1054,7 +1055,8 @@ TEST_CASE("parse_next_component() example")
   SUBCASE("two components") {
     std::vector<const char*> argv {
       "test", "-o", "1.2,3.45"};
-    argagg::parser_results args = argparser.parse(argv.size(), &(argv.front()));
+    argagg::parser_results args =
+      argparser.parse(argv.size(), &(argv.front()));
     CHECK(args.has_option("origin") == true);
     auto origin = args["origin"].as<position3>();
     CHECK(origin.x == 1.2);
@@ -1064,12 +1066,85 @@ TEST_CASE("parse_next_component() example")
   SUBCASE("one component") {
     std::vector<const char*> argv {
       "test", "-o", "1.23456789"};
-    argagg::parser_results args = argparser.parse(argv.size(), &(argv.front()));
+    argagg::parser_results args =
+      argparser.parse(argv.size(), &(argv.front()));
     CHECK(args.has_option("origin") == true);
     auto origin = args["origin"].as<position3>();
     CHECK(origin.x == 1.23456789);
     CHECK(origin.y == 0.0);
     CHECK(origin.z == 0.0);
+  }
+}
+
+
+// Define a custom conversion function for the test that follows
+struct velocity3 {
+  double x;
+  double y;
+  double z;
+};
+namespace argagg {
+namespace convert {
+  template <>
+  velocity3 arg(const char* s)
+  {
+    velocity3 result {0.0, 0.0, 0.0};
+    if (!parse_next_component(s, result.x, '+')) {
+      // could potentially throw an error if you require that at least two
+      // components exist in the list
+      return result;
+    }
+    if (!parse_next_component(s, result.y, '+')) {
+      return result;
+    }
+    if (!parse_next_component(s, result.z, '+')) {
+      return result;
+    }
+    return result;
+  }
+} // namespace convert
+} // namespace argagg
+
+
+TEST_CASE("parse_next_component() example with non-default delimiter")
+{
+  argagg::parser argparser {{
+      { "velocity", {"--velocity"},
+        "velocity as velocity3 specifieid as a plus ('+') separated list of "
+        "components (e.g. '1+2+3')", 1},
+    }};
+  SUBCASE("three components") {
+    std::vector<const char*> argv {
+      "test", "--velocity", "1.2+3.45+6.789"};
+    argagg::parser_results args =
+      argparser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("velocity") == true);
+    auto velocity = args["velocity"].as<velocity3>();
+    CHECK(velocity.x == 1.2);
+    CHECK(velocity.y == 3.45);
+    CHECK(velocity.z == 6.789);
+  }
+  SUBCASE("two components") {
+    std::vector<const char*> argv {
+      "test", "--velocity", "1.2+3.45"};
+    argagg::parser_results args =
+      argparser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("velocity") == true);
+    auto velocity = args["velocity"].as<velocity3>();
+    CHECK(velocity.x == 1.2);
+    CHECK(velocity.y == 3.45);
+    CHECK(velocity.z == 0.0);
+  }
+  SUBCASE("one component") {
+    std::vector<const char*> argv {
+      "test", "--velocity", "1.23456789"};
+    argagg::parser_results args =
+      argparser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("velocity") == true);
+    auto velocity = args["velocity"].as<velocity3>();
+    CHECK(velocity.x == 1.23456789);
+    CHECK(velocity.y == 0.0);
+    CHECK(velocity.z == 0.0);
   }
 }
 

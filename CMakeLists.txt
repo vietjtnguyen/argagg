@@ -87,7 +87,11 @@ endif()
 # Build and register the unit tests if configured to.
 if( ARGAGG_BUILD_TESTS )
   enable_testing()
-  add_executable( argagg_test "test/test.cpp" )
+  add_executable(
+    argagg_test
+    "test/test.cpp"
+    "test/test_comma_separated_strings.cpp"
+  )
   set_target_properties(
     argagg_test
     PROPERTIES
@@ -118,7 +122,7 @@ if( ARGAGG_BUILD_DOCS AND DOXYGEN )
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*"
     "${CMAKE_CURRENT_SOURCE_DIR}/test/*"
   )
-  
+
   # Like the version.hpp header file we're going to replace some CMake variables
   # in the doxygen configuration with actual values.
   configure_file(
@@ -126,7 +130,7 @@ if( ARGAGG_BUILD_DOCS AND DOXYGEN )
     ${CMAKE_BINARY_DIR}/doxygen.cfg
     @ONLY
   )
-  
+
   # Now we add a command for CMake to run to generate documentation.
   add_custom_command(
     # We tell CMake that this command will generate the `html` and `xml`
@@ -149,7 +153,7 @@ if( ARGAGG_BUILD_DOCS AND DOXYGEN )
       ${CMAKE_BINARY_DIR}/doxygen.cfg
       ${DOC_INPUTS}
   )
-  
+
   # This creates an "empty target" named "docs" that doesn't produce output, but
   # depends on the generated documentation. The result is we can run "make docs"
   # and it behaves the way we expect. It also doesn't regenerate documentation if
@@ -160,7 +164,7 @@ if( ARGAGG_BUILD_DOCS AND DOXYGEN )
       "${CMAKE_BINARY_DIR}/share/doc/${PROJECT_NAME}/html"
       "${CMAKE_BINARY_DIR}/share/doc/${PROJECT_NAME}/xml"
   )
-  
+
   # Finally set up an installation target for the documentation.
   install(
     DIRECTORY "${CMAKE_BINARY_DIR}/share/"

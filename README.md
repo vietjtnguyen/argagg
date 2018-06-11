@@ -250,3 +250,8 @@ For whitespace delimited arguments the greedy processing means the next argument
 - `--output=foo -- --bar`: `--output`'s argument is `foo`, `--bar` is a positional argument
 - `--output -- --bar`: `--output`'s argument is `--`, `--bar` is treated as a flag
 - `--output --bar`: `--output`'s argument is `--bar`
+
+Adding Argument Conversions
+---------------------------
+
+Arguments are converted into types by defining template specializations for the function `argagg::convert::arg<>()`. Specializations for integer and floating point types are pre-defined in `include/argagg/argagg.hpp`. An extension for parsing an argument as a comma-separated list of strings is defined in `include/argagg/convert/comma_separated_strings.hpp`.

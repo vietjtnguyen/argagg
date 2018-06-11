@@ -44,11 +44,42 @@ namespace convert {
   /**
    * @brief
    * Partially specializes @ref argagg::convert::converter for the @ref
-   * cv::Point_ type.
+   * cv::Point_ type. Parses as a comma separated list of components.
    */
   template <typename T>
   struct converter<cv::Point_<T>> {
     static cv::Point_<T> convert(const char* s);
+  };
+
+  /**
+   * @brief
+   * Partially specializes @ref argagg::convert::converter for the @ref
+   * cv::Point3_ type. Parses as a comma separated list of components.
+   */
+  template <typename T>
+  struct converter<cv::Point3_<T>> {
+    static cv::Point3_<T> convert(const char* s);
+  };
+
+  /**
+   * @brief
+   * Partially specializes @ref argagg::convert::converter for the @ref
+   * cv::Size_ type. Parses as a 'x' separated pair of width and
+   * height.
+   */
+  template <typename T>
+  struct converter<cv::Size_<T>> {
+    static cv::Size_<T> convert(const char* s);
+  };
+
+  /**
+   * @brief
+   * Partially specializes @ref argagg::convert::converter for the @ref
+   * cv::Rect_ type. Parses as a comma separated list of x, y, width, height.
+   */
+  template <typename T>
+  struct converter<cv::Rect_<T>> {
+    static cv::Rect_<T> convert(const char* s);
   };
 
 } // namespace convert
@@ -72,6 +103,60 @@ converter<cv::Point_<T>>::convert(const char* s)
     return result;
   }
   if (!parse_next_component(s, result.y)) {
+    return result;
+  }
+  return result;
+}
+
+
+template <typename T>
+cv::Point3_<T>
+converter<cv::Point3_<T>>::convert(const char* s)
+{
+  cv::Point3_<T> result {0, 0, 0};
+  if (!parse_next_component(s, result.x)) {
+    return result;
+  }
+  if (!parse_next_component(s, result.y)) {
+    return result;
+  }
+  if (!parse_next_component(s, result.z)) {
+    return result;
+  }
+  return result;
+}
+
+
+template <typename T>
+cv::Size_<T>
+converter<cv::Size_<T>>::convert(const char* s)
+{
+  cv::Size_<T> result {0, 0};
+  if (!parse_next_component(s, result.width, 'x')) {
+    return result;
+  }
+  if (!parse_next_component(s, result.height, 'x')) {
+    return result;
+  }
+  return result;
+}
+
+
+template <typename T>
+cv::Rect_<T>
+converter<cv::Rect_<T>>::convert(const char* s)
+{
+  cv::Rect_<T> result {0, 0, 0, 0};
+  if (!parse_next_component(s, result.x)) {
+    return result;
+  }
+  if (!parse_next_component(s, result.y)) {
+    return result;
+  }
+  if (!parse_next_component(s, result.width)) {
+    return result;
+  }
+  if (!parse_next_component(s, result.height)) {
     return result;
   }
   return result;

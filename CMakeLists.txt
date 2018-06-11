@@ -90,7 +90,7 @@ if( ARGAGG_BUILD_TESTS )
   add_executable(
     argagg_test
     "test/test.cpp"
-    "test/test_comma_separated_strings.cpp"
+    "test/test_csv.cpp"
   )
   set_target_properties(
     argagg_test

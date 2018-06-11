@@ -1,8 +1,8 @@
 /*
  * @file
  * @brief
- * Defines the argagg::comma_separated_strings type and an argument conversion
- * specialization that parses an argument as an argagg::comma_separated_strings.
+ * Defines the argagg::csv type and an argument conversion specialization that
+ * parses an argument as an argagg::csv.
  *
  * @copyright
  * Copyright (c) 2018 Viet The Nguyen
@@ -29,12 +29,11 @@
  * IN THE SOFTWARE.
  */
 #pragma once
-#ifndef ARGAGG_ARGAGG_CONVERT_COMMA_SEPARATED_VALUES_HPP
-#define ARGAGG_ARGAGG_CONVERT_COMMA_SEPARATED_VALUES_HPP
+#ifndef ARGAGG_ARGAGG_CONVERT_CSV_HPP
+#define ARGAGG_ARGAGG_CONVERT_CSV_HPP
 
 #include "../argagg.hpp"
 
-#include <string>
 #include <vector>
 
 
@@ -42,17 +41,26 @@ namespace argagg {
 
 /**
  * @brief
- * Represents a list of comma-separated strings. This is defined as a new type
- * to make creating a specialization of argagg::convert::arg() easier.
+ * Represents a list of comma-separated values. This is defined as a new type
+ * to embed the delimiter semantics into the type (if it was just a std::vector
+ * then it's not clear what the delimiter is).
  */
-struct comma_separated_strings {
-  std::vector<std::string> values;
+template <typename T>
+struct csv {
+  std::vector<T> values;
 };
 
 namespace convert {
 
-  template <>
-  comma_separated_strings arg(const char* s);
+  /**
+   * @brief
+   * Partially specializes @ref argagg::convert::converter for the @ref
+   * argagg::csv type.
+   */
+  template <typename T>
+  struct converter<csv<T>> {
+    static csv<T> convert(const char* s);
+  };
 
 } // namespace convert
 
@@ -66,11 +74,12 @@ namespace argagg {
 namespace convert {
 
 
-template <> inline
-comma_separated_strings arg(const char* s)
+template <typename T>
+csv<T>
+converter<csv<T>>::convert(const char* s)
 {
-  comma_separated_strings result {{}};
-  std::string value;
+  csv<T> result {{}};
+  T value;
   while (parse_next_component(s, value, ',')) {
     result.values.emplace_back(std::move(value));
   }
@@ -83,4 +92,4 @@ comma_separated_strings arg(const char* s)
 } // namespace argagg
 
 
-#endif // ARGAGG_ARGAGG_CONVERT_COMMA_SEPARATED_VALUES_HPP
+#endif // ARGAGG_ARGAGG_CONVERT_CSV_HPP

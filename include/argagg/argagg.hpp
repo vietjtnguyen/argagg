@@ -167,6 +167,22 @@ namespace convert {
 
   /**
    * @brief
+   * For simple types the main extension point for adding argument conversions
+   * is argagg::convert::arg<T>(). However, for complex types such as templated
+   * types partial specialization of a helper struct is required. This struct
+   * provides that extension point. The default, generic implementation of
+   * argagg::convert::arg<T>() calls converter<T>::convert().
+   *
+   * @see
+   * @ref argagg::csv
+   */
+  template <typename T>
+  struct converter {
+    static T convert(const char* arg);
+  };
+
+  /**
+   * @brief
    * A utility function for parsing an argument as a delimited list. To use,
    * initialize a const char* pointer to the start of argument string. Then
    * call parse_next_component(), providing that pointer, a mutable reference
@@ -1440,6 +1456,13 @@ namespace convert {
   DEFINE_CONVERSION_FROM_LONG_LONG_(unsigned long long)
 
 #undef DEFINE_CONVERSION_FROM_LONG_LONG_
+
+
+  template <typename T>
+  T arg(const char* arg)
+  {
+    return converter<T>::convert(arg);
+  }
 
 
   template <> inline

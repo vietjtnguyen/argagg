@@ -87,11 +87,40 @@ endif()
 # Build and register the unit tests if configured to.
 if( ARGAGG_BUILD_TESTS )
   enable_testing()
-  add_executable(
-    argagg_test
-    "test/test.cpp"
-    "test/test_csv.cpp"
-  )
+
+  list( APPEND ARGAGG_TEST_SOURCES "test/test.cpp" )
+  list( APPEND ARGAGG_TEST_SOURCES "test/test_csv.cpp" )
+
+  find_path( OPENCV_INCLUDE_DIR "opencv2/opencv.hpp" )
+  find_library( OPENCV_CORE_LIBRARY opencv_core )
+  if( OPENCV_INCLUDE_DIR AND OPENCV_CORE_LIBRARY )
+    list( APPEND ARGAGG_TEST_SOURCES "test/test_opencv.cpp" )
+    list( APPEND ARGAGG_TEST_INCLUDE_DIRS ${OPENCV_INCLUDE_DIR} )
+    list( APPEND ARGAGG_TEST_LIB_DEPS ${OPENCV_CORE_LIBRARY} )
+  else()
+    message( "Unable to find OpenCV, disabling test_opencv.cpp" )
+  endif()
+
+  add_executable( argagg_test ${ARGAGG_TEST_SOURCES} )
+
+  list( LENGTH ARGAGG_TEST_INCLUDE_DIRS ARGAGG_TEST_INCLUDE_DIRS_LENGTH )
+  if( ARGAGG_TEST_INCLUDE_DIRS_LENGTH GREATER 0 )
+    target_include_directories(
+      argagg_test
+      PRIVATE
+      ${ARGAGG_TEST_INCLUDE_DIRS}
+    )
+  endif()
+
+  list( LENGTH ARGAGG_TEST_LIB_DEPS ARGAGG_TEST_LIB_DEPS_LENGTH )
+  if( ARGAGG_TEST_LIB_DEPS_LENGTH GREATER 0 )
+    target_link_libraries(
+      argagg_test
+      PRIVATE
+      ${ARGAGG_TEST_LIB_DEPS}
+    )
+  endif()
+
   set_target_properties(
     argagg_test
     PROPERTIES

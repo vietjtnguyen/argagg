@@ -14,15 +14,15 @@ TEST_CASE("cv::Point example")
       { "point", {"-p", "--point"},
         "point as a comma separated list of components (e.g. '1,2,3')", 1},
     }};
-  SUBCASE("two components") {
+  SUBCASE("zero component") {
     std::vector<const char*> argv {
-      "test", "-p", "1,3"};
+      "test", "-p", ""};
     argagg::parser_results args =
       argparser.parse(argv.size(), &(argv.front()));
     CHECK(args.has_option("point") == true);
-    auto point = args["point"].as<cv::Point>();
-    CHECK(point.x == 1);
-    CHECK(point.y == 3);
+    CHECK_THROWS({
+      args["point"].as<cv::Point>();
+    });
   }
   SUBCASE("one component") {
     std::vector<const char*> argv {
@@ -33,6 +33,26 @@ TEST_CASE("cv::Point example")
     auto point = args["point"].as<cv::Point>();
     CHECK(point.x == 1);
     CHECK(point.y == 0);
+  }
+  SUBCASE("two components") {
+    std::vector<const char*> argv {
+      "test", "-p", "1,3"};
+    argagg::parser_results args =
+      argparser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("point") == true);
+    auto point = args["point"].as<cv::Point>();
+    CHECK(point.x == 1);
+    CHECK(point.y == 3);
+  }
+  SUBCASE("three components (too many)") {
+    std::vector<const char*> argv {
+      "test", "-p", "1,3,5"};
+    argagg::parser_results args =
+      argparser.parse(argv.size(), &(argv.front()));
+    CHECK(args.has_option("point") == true);
+    auto point = args["point"].as<cv::Point>();
+    CHECK(point.x == 1);
+    CHECK(point.y == 3);
   }
   SUBCASE("float") {
     std::vector<const char*> argv {

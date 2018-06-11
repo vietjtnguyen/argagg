@@ -18,6 +18,8 @@
 - Replaced fmt fork with word wrap implementation (#21, thanks @myint!)
 - Fixed exception reference warnings in test cases (#30, thanks @rianquinn!)
 - Fixed minor typos and spelling mistakes
+- Added optional conversion header argagg/convert/boost_optional.hpp
+  - Added argument conversion specialization for boost::optional
 
 0.4.6
 -----

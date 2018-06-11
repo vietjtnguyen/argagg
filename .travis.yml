@@ -8,6 +8,7 @@ install:
   - sudo apt-get install lcov
   - gem install coveralls-lcov
   - sudo apt-get install libopencv-dev
+  - sudo apt-get install libboost-dev
 script:
   - mkdir build
   - cd build

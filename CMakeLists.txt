@@ -101,6 +101,14 @@ if( ARGAGG_BUILD_TESTS )
     message( "Unable to find OpenCV, disabling test_opencv.cpp" )
   endif()
 
+  find_path( BOOST_OPTIONAL_INCLUDE_DIR "boost/optional.hpp" )
+  if( BOOST_OPTIONAL_INCLUDE_DIR )
+    list( APPEND ARGAGG_TEST_SOURCES "test/test_boost_optional.cpp" )
+    list( APPEND ARGAGG_TEST_INCLUDE_DIRS ${BOOST_OPTIONAL_INCLUDE_DIR} )
+  else()
+    message( "Unable to find boost/optional.hpp, disabling test_boost_optional.cpp" )
+  endif()
+
   add_executable( argagg_test ${ARGAGG_TEST_SOURCES} )
 
   list( LENGTH ARGAGG_TEST_INCLUDE_DIRS ARGAGG_TEST_INCLUDE_DIRS_LENGTH )

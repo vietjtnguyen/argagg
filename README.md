@@ -25,6 +25,8 @@ This is yet another C++ command line argument/option parser. It was written as a
 
 Help message formatting is provided via the `fmt` utility on {Li,U}nix systems.
 
+The project has only one required header: [`argagg.hpp`](./include/argagg/argagg.hpp). Optional headers under [`include/argagg/convert`](./include/argagg/convert) contain extra argument conversion specializations.
+
 [getopt]: https://www.gnu.org/software/libc/manual/html_node/Getopt.html#Getopt
 [Boost program options]: http://www.boost.org/doc/libs/release/libs/program_options/
 [TCLAP]: http://tclap.sourceforge.net/
@@ -123,14 +125,18 @@ if (args["num"]) {
 
 Finally, you can get all of the positional arguments as an `std::vector` using the `argagg::parser_results::pos` member. You can alternatively convert individual positional arguments using the same conversion functions as the option argument conversion methods.
 
-    auto y = 0.0;
-    if (args.pos.size() > 0) {
-      y = args.as<double>(0);
-    }
+```cpp
+auto y = 0.0;
+if (args.pos.size() > 0) {
+  y = args.as<double>(0);
+}
+```
 
 One can also specify `--` on the command line in order to treat all following arguments as not options.
 
 For a more detailed treatment take a look at the [examples](./examples) or [test cases](./test/test.cpp).
+
+Custom argument conversion functions can also be defined by specializing either `argagg::convert::arg<T>()` or `argagg::convert::converter<T>`. See [`test_csv.cpp`](./test/test_csv.cpp) as well as `TEST_CASE("custom conversion function")` and `TEST_CASE("parse_next_component() example")` in [`test.cpp`](./test/test.cpp).
 
 Mental Model
 ------------
@@ -211,7 +217,7 @@ Quick Reference
 Installation
 ------------
 
-There is just a single header file ([`argagg.hpp`](./include/argagg/argagg.hpp)) so you can copy that whereever you want. If you want to properly install it you can use the CMake script. The CMake script exists primarily to build the tests and documentation, but an install target for the header is provided.
+There is just a single required header file ([`argagg.hpp`](./include/argagg/argagg.hpp)) so you can copy that whereever you want. If you want to properly install it you can use the CMake script. The CMake script exists primarily to build the tests and documentation, but an install target for the header is provided which will install all header files.
 
 The standard installation dance using CMake and `make` is as follows:
 

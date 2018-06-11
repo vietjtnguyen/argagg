@@ -87,6 +87,8 @@ One can also specify `--` on the command line in order to treat all following ar
 
 For a more detailed treatment take a look at the examples or test cases.
 
+Custom argument conversion functions can also be defined by specializing either argagg::convert::arg<T>() or argagg::convert::converter<T>. See test_csv.cpp as well as `TEST_CASE("custom conversion function")` and `TEST_CASE("parse_next_component() example")` in test.cpp.
+
 Mental Model
 ------------
 
@@ -126,7 +128,7 @@ Conversion to types occurs at the very end when the `as<T>()` API is used. Up to
 Installation
 ------------
 
-There is just a single header file (`argagg.hpp`) so you can copy that whereever you want. If you want to properly install it you can use the CMake script. The CMake script exists primarily to build the tests and documentation, but an install target for the header is provided.
+There is just a single required header file (`argagg.hpp`) so you can copy that whereever you want. If you want to properly install it you can use the CMake script. The CMake script exists primarily to build the tests and documentation, but an install target for the header is provided which will install all header files.
 
 The standard installation dance using CMake and `make` is as follows:
 

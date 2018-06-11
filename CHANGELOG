@@ -2,8 +2,7 @@
 -----
 
 - Added argagg::convert::parse_next_component()
-- Added argagg::comma_separated_strings and a corresponding argument conversion
-  specialization
+- Added argagg::csv<T> and a corresponding argument conversion specialization
 
 0.4.6
 -----

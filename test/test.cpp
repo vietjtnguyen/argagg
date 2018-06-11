@@ -211,6 +211,20 @@ TEST_CASE("no definitions")
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     }, argagg::unexpected_option_error);
   }
+  SUBCASE("invalid parser_results indexing") {
+    std::vector<const char*> argv {
+      "test"};
+    argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
+    CHECK_THROWS_AS({
+      args["help"];
+    }, argagg::unknown_option);
+    CHECK_THROWS_AS({
+      args["verbose"];
+    }, argagg::unknown_option);
+    CHECK_THROWS_AS({
+      args["output"];
+    }, argagg::unknown_option);
+  }
 }
 
 

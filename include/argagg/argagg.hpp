@@ -151,6 +151,17 @@ struct invalid_flag
 
 /**
  * @brief
+ * This exception is thrown when an unknown option is requested by name from an
+ * argagg::parser_results through the indexing operator ([]).
+ */
+struct unknown_option
+: public std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
+
+/**
+ * @brief
  * The set of template instantiations that convert C-strings to other types for
  * the option_result::as(), option_results::as(), parser_results::as(), and
  * parser_results::all_as() methods are placed in this namespace.
@@ -839,16 +850,24 @@ bool parser_results::has_option(const std::string& name) const
 
 inline
 option_results& parser_results::operator [] (const std::string& name)
-{
+try {
   return this->options.at(name);
+} catch (const std::out_of_range& e) {
+  std::ostringstream msg;
+  msg << "no option named \"" << name << "\" in parser_results";
+  throw unknown_option(msg.str());
 }
 
 
 inline
 const option_results&
 parser_results::operator [] (const std::string& name) const
-{
+try {
   return this->options.at(name);
+} catch (const std::out_of_range& e) {
+  std::ostringstream msg;
+  msg << "no option named \"" << name << "\" in parser_results";
+  throw unknown_option(msg.str());
 }
 
 

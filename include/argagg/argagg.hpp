@@ -56,8 +56,8 @@
  * There are only two hard things in Computer Science: cache invalidation and
  * naming things (Phil Karlton).
  *
- * The names of types have to be succint and clear. This has turned out to be a
- * more difficult thing than I expected. Here you'll find a quick overview of
+ * The names of types have to be succinct and clear. This has turned out to be
+ * a more difficult thing than I expected. Here you'll find a quick overview of
  * the type names you'll find in this namespace (and thus "library").
  *
  * When a program is invoked it is passed a number of "command line arguments".

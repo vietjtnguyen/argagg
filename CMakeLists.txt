@@ -81,6 +81,15 @@ if( ARGAGG_BUILD_EXAMPLES )
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
       OUTPUT_NAME sample1
   )
+
+  add_executable( gcc_like "examples/gcc_like.cpp" )
+  set_target_properties(
+    gcc_like
+    PROPERTIES
+      COMPILE_FLAGS "${ARGAGG_TEST_COMPILE_FLAGS}"
+      INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+  )
 endif()
 
 

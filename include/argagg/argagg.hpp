@@ -681,7 +681,7 @@ struct parser {
  * @code
  * {
  *   argagg::fmt_ostream f(std::cerr);
- *   f << "Usage: " << really_long_string << std::endl;
+ *   f << "Usage: " << really_long_string << '\n';
  * } // on destruction here the formatted string will be streamed to std::cerr
  * @endcode
  *
@@ -1694,8 +1694,7 @@ std::ostream& operator << (std::ostream& os, const argagg::parser& x)
         os << ", ";
       }
     }
-    os << std::endl;
-    os << "        " << definition.help << std::endl;
+    os << "\n        " << definition.help << '\n';
   }
   return os;
 }

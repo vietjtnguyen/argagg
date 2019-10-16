@@ -156,7 +156,7 @@ TEST_CASE("intro example")
     argagg::parser_results args;
     CHECK_THROWS_AS({
       args = argparser.parse(argv.size(), &(argv.front()));
-    }, argagg::option_lacks_argument_error);
+    }, argagg::option_lacks_argument_error&);
   }
   SUBCASE("no arguments") {
     std::vector<const char*> argv {"test"};
@@ -209,7 +209,7 @@ TEST_CASE("no definitions")
       "test", "--verbose", "-o", "baz"};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::unexpected_option_error);
+    }, argagg::unexpected_option_error&);
   }
   SUBCASE("invalid parser_results indexing") {
     std::vector<const char*> argv {
@@ -217,13 +217,13 @@ TEST_CASE("no definitions")
     argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
     CHECK_THROWS_AS({
       args["help"];
-    }, argagg::unknown_option);
+    }, argagg::unknown_option&);
     CHECK_THROWS_AS({
       args["verbose"];
-    }, argagg::unknown_option);
+    }, argagg::unknown_option&);
     CHECK_THROWS_AS({
       args["output"];
-    }, argagg::unknown_option);
+    }, argagg::unknown_option&);
   }
 }
 
@@ -238,7 +238,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
   SUBCASE("too short") {
     argagg::parser parser {{
@@ -246,7 +246,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
   SUBCASE("too short 2") {
     argagg::parser parser {{
@@ -254,7 +254,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
   SUBCASE("no hyphen") {
     argagg::parser parser {{
@@ -262,7 +262,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
   SUBCASE("short flag group") {
     argagg::parser parser {{
@@ -270,7 +270,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
   SUBCASE("invalid character") {
     argagg::parser parser {{
@@ -278,7 +278,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
   SUBCASE("too many hyphens") {
     argagg::parser parser {{
@@ -286,7 +286,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
   SUBCASE("long flag equal assignment") {
     argagg::parser parser {{
@@ -294,7 +294,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
   SUBCASE("duplicate short flags") {
     argagg::parser parser {{
@@ -303,7 +303,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
   SUBCASE("duplicate long flags") {
     argagg::parser parser {{
@@ -312,7 +312,7 @@ TEST_CASE("invalid definitions")
       }};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::invalid_flag);
+    }, argagg::invalid_flag&);
   }
 }
 
@@ -340,7 +340,7 @@ TEST_CASE("simple")
     CHECK(args.has_option("verbose") == false);
     CHECK_THROWS_AS({
       args["verbose"].as<int>();
-    }, std::out_of_range);
+    }, std::out_of_range&);
     CHECK(args["verbose"].as<int>(999) == 999);
     CHECK(args.has_option("output") == false);
     CHECK(args.count() == 3);
@@ -359,10 +359,10 @@ TEST_CASE("simple")
     CHECK(args["verbose"][1].arg == nullptr);
     CHECK_THROWS_AS({
       args["verbose"][0].as<std::string>();
-    }, argagg::option_lacks_argument_error);
+    }, argagg::option_lacks_argument_error&);
     CHECK_THROWS_AS({
       args["verbose"][0].as<int>();
-    }, argagg::option_lacks_argument_error);
+    }, argagg::option_lacks_argument_error&);
     CHECK(args.has_option("output") == true);
     CHECK(args["output"].count() == 2);
     CHECK(args["output"][0].as<std::string>() == "foo");
@@ -420,14 +420,14 @@ TEST_CASE("simple")
       "test", "--output", "foo", "-h", "bar", "-v"};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::unexpected_option_error);
+    }, argagg::unexpected_option_error&);
   }
   SUBCASE("unused long flag") {
     std::vector<const char*> argv {
       "test", "--output", "foo", "--help", "bar", "-v"};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::unexpected_option_error);
+    }, argagg::unexpected_option_error&);
   }
 }
 
@@ -480,7 +480,7 @@ TEST_CASE("long flag equal format for arguments")
       "test", "--verbose=bad"};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::unexpected_argument_error);
+    }, argagg::unexpected_argument_error&);
   }
 }
 
@@ -531,14 +531,14 @@ TEST_CASE("short flag groups")
       "test", "--vfh", "bar"};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::unexpected_option_error);
+    }, argagg::unexpected_option_error&);
   }
   SUBCASE("unexpected symbol") {
     std::vector<const char*> argv {
       "test", "-v-fh", "bar"};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, std::domain_error);
+    }, std::domain_error&);
   }
   SUBCASE("trailing flag with argument") {
     std::vector<const char*> argv {
@@ -663,14 +663,14 @@ TEST_CASE("option requires argument")
       "test", "-n", "1", "2", "-c"};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::unexpected_option_error);
+    }, argagg::unexpected_option_error&);
   }
   SUBCASE("given zero, end of args") {
     std::vector<const char*> argv {
       "test", "-n"};
     CHECK_THROWS_AS({
       argagg::parser_results args = parser.parse(argv.size(), &(argv.front()));
-    }, argagg::option_lacks_argument_error);
+    }, argagg::option_lacks_argument_error&);
   }
 }
 
@@ -972,10 +972,10 @@ TEST_CASE("argument conversions")
     CHECK(args["number"].count() == 1);
     CHECK_THROWS_AS({
       args["number"].as<int>();
-    }, std::invalid_argument);
+    }, std::invalid_argument&);
     CHECK_THROWS_AS({
       args["number"].as<double>();
-    }, std::invalid_argument);
+    }, std::invalid_argument&);
     CHECK(args["number"].as<int>(-1) == -1);
     CHECK(args["number"].as<double>(3.141) == doctest::Approx(3.141));
   }

@@ -31,11 +31,6 @@
 #ifndef ARGAGG_ARGAGG_ARGAGG_HPP
 #define ARGAGG_ARGAGG_ARGAGG_HPP
 
-#ifdef __unix__
-#include <stdio.h>
-#include <unistd.h>
-#endif // #ifdef __unix__
-
 #include <algorithm>
 #include <array>
 #include <cstdlib>
@@ -673,8 +668,8 @@ struct parser {
 /**
  * @brief
  * A convenience output stream that will accumulate what is streamed to it and
- * then, on destruction, format the accumulated string using the fmt program
- * (via the argagg::fmt_string() function) to the provided std::ostream.
+ * then, on destruction, format the accumulated string (via the
+ * argagg::fmt_string() function) to the provided std::ostream.
  *
  * Example use:
  *
@@ -684,14 +679,6 @@ struct parser {
  *   f << "Usage: " << really_long_string << '\n';
  * } // on destruction here the formatted string will be streamed to std::cerr
  * @endcode
- *
- * @note
- * This only has formatting behavior if the <tt>__unix__</tt> preprocessor
- * definition is defined since formatting relies on the POSIX API for forking,
- * executing a process, and reading/writing to/from file descriptors. If that
- * preprocessor definition is not defined then this class has the same overall
- * behavior except the output string is not formatted (basically streams
- * whatever the accumulated string is). See arggg::fmt_string().
  */
 struct fmt_ostream : public std::ostringstream {
 
@@ -725,15 +712,6 @@ struct fmt_ostream : public std::ostringstream {
  * Processes the provided string using the fmt util and returns the resulting
  * output as a string. Not the most efficient (in time or space) but gets the
  * job done.
- *
- * This function is cowardly so if there are any errors encountered such as a
- * syscall returning -1 then the input string is returned.
- *
- * @note
- * This only has formatting behavior if the <tt>__unix__</tt> preprocessor
- * definition is defined since it relies on the POSIX API for forking,
- * executing a process, reading/writing to/from file descriptors, and the
- * existence of the fmt util.
  */
 std::string fmt_string(const std::string& s);
 
@@ -1607,77 +1585,103 @@ fmt_ostream::~fmt_ostream()
 }
 
 
-#ifdef __unix__
+inline
+std::string lstrip(const std::string& text)
+{
+  auto result = text;
+
+  result.erase(
+    result.begin(),
+    std::find_if(
+      result.begin(),
+      result.end(),
+      [](int ch) { return !std::isspace(ch); }));
+
+  return result;
+}
 
 
 inline
-std::string fmt_string(const std::string& s)
+std::string rstrip(const std::string& text)
 {
-  constexpr int read_end = 0;
-  constexpr int write_end = 1;
+  auto result = text;
 
-  // TODO (vnguyen): This function overall needs to handle possible error
-  // returns from the various syscalls.
+  result.erase(
+    std::find_if(
+      result.rbegin(),
+      result.rend(),
+      [](int ch) { return !std::isspace(ch); }).base(),
+    result.end());
 
-  int read_pipe[2];
-  int write_pipe[2];
-  if (pipe(read_pipe) == -1) {
-    return s;
+  return result;
+}
+
+
+inline
+std::string construct_line(const std::string& indent,
+                           const std::string& contents)
+{
+  return indent + rstrip(contents) + "\n";
+}
+
+
+/**
+ * @brief
+ * Return a wrapped version of a single line of text.
+ */
+inline
+std::string wrap_line(const std::string& single_line,
+                      const std::size_t wrap_width)
+{
+  auto indentation_spaces = single_line.find_first_not_of(" ");
+  if (indentation_spaces == std::string::npos) {
+    indentation_spaces = 0;
   }
-  if (pipe(write_pipe) == -1) {
-    return s;
-  }
 
-  auto parent_pid = fork();
-  bool is_fmt_proc = (parent_pid == 0);
-  if (is_fmt_proc) {
-    dup2(write_pipe[read_end], STDIN_FILENO);
-    dup2(read_pipe[write_end], STDOUT_FILENO);
-    close(write_pipe[read_end]);
-    close(write_pipe[write_end]);
-    close(read_pipe[read_end]);
-    close(read_pipe[write_end]);
-    const char* argv[] = {"fmt", NULL};
-    execvp(const_cast<char*>(argv[0]), const_cast<char**>(argv));
-  }
+  const auto line = lstrip(single_line);
+  const auto indent = std::string(indentation_spaces, ' ');
 
-  close(write_pipe[read_end]);
-  close(read_pipe[write_end]);
-  auto fmt_write_fd = write_pipe[write_end];
-  auto write_result = write(fmt_write_fd, s.c_str(), s.length());
-  if (write_result != static_cast<ssize_t>(s.length())) {
-    return s;
-  }
-  close(fmt_write_fd);
+  std::string result;
 
-  auto fmt_read_fd = read_pipe[read_end];
-  std::ostringstream os;
-  char buf[64];
+  std::size_t position = 0;
+  std::size_t line_start = 0;
   while (true) {
-    auto read_count = read(
-      fmt_read_fd, reinterpret_cast<void*>(buf), sizeof(buf));
-    if (read_count <= 0) {
+    const auto new_position = line.find_first_of(" ", position);
+    if (new_position == std::string::npos) {
       break;
     }
-    os.write(buf, static_cast<std::streamsize>(read_count));
+
+    if (new_position + indentation_spaces > line_start + wrap_width) {
+      result += construct_line(
+        indent, line.substr(line_start, position - line_start - 1));
+
+      line_start = position;
+    }
+
+    position = new_position + 1;
   }
-  close(fmt_read_fd);
 
-  return os.str();
+  return result + construct_line(indent, line.substr(line_start));
 }
-
-
-#else // #ifdef __unix__
 
 
 inline
 std::string fmt_string(const std::string& s)
 {
-  return s;
+  std::stringstream ss(s);
+  std::string line;
+
+  std::string result;
+
+  // Use default width of `fmt`.
+  const auto column_width = 75;
+
+  while (std::getline(ss, line, '\n')) {
+    result += wrap_line(line, column_width);
+  }
+
+  return result;
 }
-
-
-#endif // #ifdef __unix__
 
 
 } // namespace argagg

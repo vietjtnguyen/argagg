@@ -1193,18 +1193,14 @@ static const std::string ipsum =
   "laborum.";
 
 
-#ifdef __unix__
 static const std::string fmt_ipsum =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod\n"
   "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim\n"
   "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea\n"
   "commodo consequat. Duis aute irure dolor in reprehenderit in voluptate\n"
   "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat\n"
-  "cupidatat non proident, sunt in culpa qui officia deserunt mollit anim\n"
-  "id est laborum.\n";
-#else // #ifdef __unix__
-static const std::string fmt_ipsum(ipsum);
-#endif // #ifdef __unix__
+  "cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id\n"
+  "est laborum.\n";
 
 
 TEST_CASE("fmt_ostream")
@@ -1222,4 +1218,23 @@ TEST_CASE("fmt_string")
 {
   std::string test_formatted = argagg::fmt_string(ipsum);
   CHECK(test_formatted == fmt_ipsum);
+}
+
+
+TEST_CASE("fmt_string trailing whitespace")
+{
+  const auto test_formatted = argagg::fmt_string("  abc  \t ");
+  CHECK(test_formatted == "  abc\n");
+}
+
+
+TEST_CASE("fmt_string indent")
+{
+  const auto test_formatted = argagg::fmt_string(
+    "        Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
+    "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+  CHECK(
+    test_formatted ==
+    "        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do\n"
+    "        eiusmod tempor incididunt ut labore et dolore magna aliqua.\n");
 }

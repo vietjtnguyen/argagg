@@ -135,7 +135,7 @@ struct option_lacks_argument_error
  * @brief
  * This exception is thrown when an option's flag is invalid. This can be the
  * case if the flag is not prefixed by one or two hyphens or contains non
- * alpha-numeric characters after the hypens. See is_valid_flag_definition()
+ * alpha-numeric characters after the hyphens. See is_valid_flag_definition()
  * for more details.
  */
 struct invalid_flag
@@ -235,7 +235,7 @@ namespace convert {
      {
        argagg::parser argparser {{
           { "origin", {"-o", "--origin"},
-            "origin as position3 specifieid as a comma separated list of "
+            "origin as position3 specified as a comma separated list of "
             "components (e.g. '1,2,3')", 1},
         }};
        argagg::parser_results args = argparser.parse(argc, argv);
@@ -312,7 +312,7 @@ struct option_result {
   /**
    * @brief
    * Explicitly define a unary not operator that wraps the implicit boolean
-   * conversion speciailization in case the compiler can't do it automatically.
+   * conversion specialization in case the compiler can't do it automatically.
    */
   bool operator ! () const;
 
@@ -396,7 +396,7 @@ struct option_results {
   /**
    * @brief
    * Explicitly define a unary not operator that wraps the implicit boolean
-   * conversion speciailization in case the compiler can't do it automatically.
+   * conversion specialization in case the compiler can't do it automatically.
    */
   bool operator ! () const;
 
@@ -709,9 +709,9 @@ struct fmt_ostream : public std::ostringstream {
 
 /**
  * @brief
- * Processes the provided string using the fmt util and returns the resulting
- * output as a string. Not the most efficient (in time or space) but gets the
- * job done.
+ * Processes the provided string using the fmt utility and returns the
+ * resulting output as a string. Not the most efficient (in time or space) but
+ * gets the job done.
  */
 std::string fmt_string(const std::string& s);
 
@@ -1175,7 +1175,7 @@ parser_results parser::parse(int argc, const char** argv) const
   // turning the parser into a thin interface (by re-exposing setters and
   // getters) to the vector methods just so that I can catch when the
   // definition has been modified. It seems much simpler to just enforce the
-  // validity when you actually want to parser because it's at the moment of
+  // validity when you actually want to parse because it's at the moment of
   // parsing that you know the definitions are complete.
   parser_map map = validate_definitions(this->definitions);
 

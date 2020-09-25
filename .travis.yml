@@ -1,5 +1,6 @@
 arch:
   - amd64
+  - arm64
   - ppc64le
 language: cpp
 dist: trusty

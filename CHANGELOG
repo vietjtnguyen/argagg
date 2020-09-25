@@ -14,6 +14,10 @@
   - Added argument conversion specialization for cv::Point3_
   - Added argument conversion specialization for cv::Size_
   - Added argument conversion specialization for cv::Rect_
+- Replaced std::endl with \n (#27)
+- Replaced fmt fork with word wrap implementation (#21, thanks @myint!)
+- Fixed exception reference warnings in test cases (#30, thanks @rianquinn!)
+- Fixed minor typos and spelling mistakes
 
 0.4.6
 -----

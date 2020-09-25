@@ -22,7 +22,7 @@ With the parser defined you actually parse the arguments by calling the argagg::
     try {
       args = argparser.parse(argc, argv);
     } catch (const std::exception& e) {
-      std::cerr << e.what() << std::endl;
+      std::cerr << e.what() << '\n';
       return EXIT_FAILURE;
     }
 
@@ -42,8 +42,7 @@ You can check if an option shows up in the command line arguments by accessing t
 That help message is only for the flags. If you want a usage message it's up to you to provide it.
 
     if (args["help"]) {
-      std::cerr << "Usage: program [options] ARG1 ARG2" << std::endl
-                << argparser;
+      std::cerr << "Usage: program [options] ARG1 ARG2\n" << argparser;
       // Usage: program [options] ARG1 ARG2
       //     -h, --help
       //         shows this help message
@@ -58,8 +57,7 @@ A special output stream, argagg::fmt_ostream, is provided that will run the usag
 
     if (args["help"]) {
       argagg::fmt_ostream fmt(std::cerr);
-      fmt << "Usage: program [options] ARG1 ARG2" << std::endl
-          << argparser;
+      fmt << "Usage: program [options] ARG1 ARG2\n" << argparser;
       return EXIT_SUCCESS;
     }
 

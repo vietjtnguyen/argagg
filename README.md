@@ -55,7 +55,7 @@ argagg::parser_results args;
 try {
   args = argparser.parse(argc, argv);
 } catch (const std::exception& e) {
-  std::cerr << e.what() << std::endl;
+  std::cerr << e.what() << '\n';
   return EXIT_FAILURE;
 }
 ```
@@ -79,8 +79,7 @@ That help message is only for the flags. If you want a usage message it's up to 
 
 ```cpp
 if (args["help"]) {
-  std::cerr << "Usage: program [options] ARG1 ARG2" << std::endl
-            << argparser;
+  std::cerr << "Usage: program [options] ARG1 ARG2\n" << argparser;
   // Usage: program [options] ARG1 ARG2
   //     -h, --help
   //         shows this help message
@@ -97,8 +96,7 @@ A special output stream, `argagg::fmt_ostream`, is provided that will run the us
 ```cpp
 if (args["help"]) {
   argagg::fmt_ostream fmt(std::cerr);
-  fmt << "Usage: program [options] ARG1 ARG2" << std::endl
-      << argparser;
+  fmt << "Usage: program [options] ARG1 ARG2\n" << argparser;
   return EXIT_SUCCESS;
 }
 ```

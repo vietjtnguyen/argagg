@@ -18,7 +18,6 @@ int main(int argc, char **argv)
   using argagg::parser;
   using std::cerr;
   using std::cout;
-  using std::endl;
   using std::ofstream;
   using std::ostream;
   using std::ostringstream;
@@ -61,18 +60,19 @@ int main(int argc, char **argv)
         "option that depends on str-opt", 1},
     }};
 
-  cout << "This one is from a C++ program" << endl ;
-  cout << "Try to launch me with some options" << endl ;
-  cout << "(type " << argv[0] << " --help for the complete list)" << endl ;
-  cout << "For example: " << argv[0] << " *.* --funct-opt" << endl ;
+  cout
+    << "This one is from a C++ program\n"
+    << "Try to launch me with some options\n"
+    << "(type " << argv[0] << " --help for the complete list)\n"
+    << "For example: " << argv[0] << " *.* --funct-opt\n";
 
   // Define our usage text.
   ostringstream usage;
   usage
-    << argv[0] << " 2.0" << endl
-    << endl
-    << "Usage: " << argv[0] << " [OPTIONS]... [FILES]..." << endl
-    << endl;
+    << argv[0] << " 2.0\n"
+    << '\n'
+    << "Usage: " << argv[0] << " [OPTIONS]... [FILES]...\n"
+    << '\n';
 
   // Use our argument parser to... parse the command line arguments. If there
   // are any problems then just spit out the usage and help text and exit.
@@ -81,9 +81,9 @@ int main(int argc, char **argv)
     args = argparser.parse(argc, argv);
   } catch (const std::exception& e) {
     argagg::fmt_ostream fmt(cerr);
-    fmt << usage.str() << argparser << endl
+    fmt << usage.str() << argparser << '\n'
         << "Encountered exception while parsing arguments: " << e.what()
-        << endl;
+        << '\n';
     return EXIT_FAILURE;
   }
 
@@ -96,50 +96,50 @@ int main(int argc, char **argv)
   }
 
   if (args["version"]) {
-    cerr << "2.0" << endl;
+    cerr << "2.0\n";
     return EXIT_SUCCESS;
   }
 
   if (!args["int-opt"]) {
-    cerr << args.program << ": '--int-opt' ('-i') option required" << endl;
+    cerr << args.program << ": '--int-opt' ('-i') option required\n";
     return EXIT_FAILURE;
   }
 
-  cout << "Here are the options you passed..." << endl;
+  cout << "Here are the options you passed...\n";
 
   for (const auto& file : args.pos) {
-    cout << "file: " << file << endl;
+    cout << "file: " << file << '\n';
   }
 
   if (args["funct-opt"]) {
-    cout << "You chose --funct-opt or -F." << endl;
+    cout << "You chose --funct-opt or -F.\n";
   }
 
   if (args["str-opt"]) {
     cout << "You inserted " << args["str-opt"].as<std::string>() << " for " <<
-      "--str-opt option." << endl;
+      "--str-opt option.\n";
   }
 
   if (args["int-opt"]) {
     cout << "This is the integer you input: " << args["int-opt"].as<int>()
-      << "." << endl;
+      << ".\n";
   }
 
   string flag_opt_arg = "off";
   if (args["flag-opt"]) {
-    cout << "The flag option was given!" << endl;
+    cout << "The flag option was given!\n";
     flag_opt_arg = "on";
   }
-  cout << "The flag is " << flag_opt_arg << "." << endl;
+  cout << "The flag is " << flag_opt_arg << ".\n";
 
   if (args["enum-opt"]) {
-    cout << "enum-opt value: " << args["enum-opt"].as<string>() << endl;
-    cout << "enum-opt (original specified) value: " << "hello" << endl;
+    cout << "enum-opt value: " << args["enum-opt"].as<string>() << '\n';
+    cout << "enum-opt (original specified) value: hello\n";
   }
 
   cout << "def_opt: " << args["def-opt"].as<string>("Hello") << "! ";
 
-  cout << "Have a nice day! :-)" << endl;
+  cout << "Have a nice day! :-)\n";
 
   return EXIT_SUCCESS;
 }

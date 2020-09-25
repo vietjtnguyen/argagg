@@ -15,7 +15,6 @@ int main(
   using argagg::parser;
   using std::cerr;
   using std::cout;
-  using std::endl;
   using std::ofstream;
   using std::ostream;
   using std::ostringstream;
@@ -65,10 +64,10 @@ int main(
   // Define our usage text.
   ostringstream usage;
   usage
-    << "Joins all positional arguments together with a separator" << endl
-    << endl
-    << "Usage: " << argv[0] << " [options] ARG [ARG...]" << endl
-    << endl;
+    << "Joins all positional arguments together with a separator\n"
+    << '\n'
+    << "Usage: " << argv[0] << " [options] ARG [ARG...]\n"
+    << '\n';
 
   // Use our argument parser to... parse the command line arguments. If there
   // are any problems then just spit out the usage and help text and exit.
@@ -77,9 +76,9 @@ int main(
     args = argparser.parse(argc, argv);
   } catch (const std::exception& e) {
     argagg::fmt_ostream help(cerr);
-    help << usage.str() << argparser << endl
+    help << usage.str() << argparser << '\n'
          << "Encountered exception while parsing arguments: " << e.what()
-         << endl;
+         << '\n';
     return EXIT_FAILURE;
   }
 
@@ -104,11 +103,11 @@ int main(
       return verbose_level >= level ? cerr : g_dev_null;
     };
 
-  vlog(1) << "verbose log level: " << verbose_level << endl;
+  vlog(1) << "verbose log level: " << verbose_level << '\n';
 
   // Use comma as the separator unless one was specified.
   auto sep = args["sep"].as<string>(",");
-  vlog(1) << "set separator to '" << sep << "'" << endl;
+  vlog(1) << "set separator to '" << sep << "'\n";
 
   // Determine output stream.
   ofstream output_file;
@@ -117,29 +116,29 @@ int main(
     string filename = args["output"];
     output_file.open(filename);
     output = &output_file;
-    vlog(1) << "outputting to file at '" << filename << "'" << endl;
+    vlog(1) << "outputting to file at '" << filename << "'\n";
   } else {
-    vlog(1) << "outputting to stdout" << endl;
+    vlog(1) << "outputting to stdout\n";
   }
 
   // Join the arguments.
   if (args.count() < 1) {
-    vlog(0) << usage.str() << argparser << endl
-            << "Not enough arguments" << endl;
+    vlog(0) << usage.str() << argparser << '\n'
+            << "Not enough arguments\n";
     return EXIT_FAILURE;
   }
   for (auto& arg : args.pos) {
-    vlog(2) << "writing argument" << endl;
-    vlog(4) << "argument is '" << arg << "'" << endl;
+    vlog(2) << "writing argument\n";
+    vlog(4) << "argument is '" << arg << "'\n";
     *output << arg;
     if (arg != args.pos.back()) {
-      vlog(3) << "writing separator" << endl;
+      vlog(3) << "writing separator\n";
       *output << sep;
     }
   }
-  vlog(4) << "writing endl" << endl;
-  *output << endl;
+  vlog(4) << "writing endl\b";
+  *output << '\n';
 
-  vlog(4) << "everything a-okay" << endl;
-  return EXIT_SUCCESS;  
+  vlog(4) << "everything a-okay\n";
+  return EXIT_SUCCESS;
 }

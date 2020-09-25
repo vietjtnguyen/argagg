@@ -84,7 +84,7 @@ TEST_CASE("intro example")
     try {
       args = argparser.parse(argv.size(), &(argv.front()));
     } catch (const std::exception& e) {
-      std::cerr << e.what() << std::endl;
+      std::cerr << e.what() << '\n';
     }
     CHECK(args.has_option("help") == true);
     CHECK(static_cast<bool>(args["help"]) == true);
@@ -124,7 +124,7 @@ TEST_CASE("intro example")
     try {
       args = argparser.parse(argv.size(), &(argv.front()));
     } catch (const std::exception& e) {
-      std::cerr << e.what() << std::endl;
+      std::cerr << e.what() << '\n';
     }
     CHECK(args.has_option("help") == true);
     CHECK(static_cast<bool>(args["help"]) == true);
@@ -164,7 +164,7 @@ TEST_CASE("intro example")
     try {
       args = argparser.parse(argv.size(), &(argv.front()));
     } catch (const std::exception& e) {
-      std::cerr << e.what() << std::endl;
+      std::cerr << e.what() << '\n';
     }
     CHECK(args.has_option("help") == false);
     CHECK(static_cast<bool>(args["help"]) == false);

@@ -20,7 +20,7 @@ This is yet another C++ command line argument/option parser. It was written as a
 - Options and positional arguments can be interleaved
 - `--` can be specified to treat all following arguments as positional arguments (i.e. not options)
 
-Help message formatting is provided via the `fmt` utility on {Li,U}nix systems.
+Help message formatting is provided via indent-preserving word wrapping.
 
 The project has only one required header: [`argagg.hpp`](./include/argagg/argagg.hpp). Optional headers under [`include/argagg/convert`](./include/argagg/convert) contain extra argument conversion specializations.
 
@@ -91,7 +91,7 @@ if (args["help"]) {
 }
 ```
 
-A special output stream, `argagg::fmt_ostream`, is provided that will run the usage and help through `fmt` for nice word wrapping (see [`./examples/joinargs.cpp`](./examples/joinargs.cpp) for a better example).
+A special output stream, `argagg::fmt_ostream`, is provided that will word wrap the usage and help (see [`./examples/joinargs.cpp`](./examples/joinargs.cpp) for a better example).
 
 ```cpp
 if (args["help"]) {

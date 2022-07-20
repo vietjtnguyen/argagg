@@ -998,7 +998,7 @@ namespace convert {
         ret.emplace_back(s, std::strlen(s));
         break;
       }
-      std::size_t len = token - s;
+      std::size_t len = static_cast<std::size_t>(token - s);
       ret.emplace_back(s, len);
       s += len + 1;
     }

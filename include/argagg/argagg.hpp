@@ -1131,8 +1131,9 @@ parser_map validate_definitions(
       }
 
       if (flag_is_short(flag.data())) {
-        const int short_flag_letter = flag[1];
-        const auto existing_short_flag = map.short_map[static_cast<std::size_t>(short_flag_letter)];
+        const std::size_t short_flag_letter = static_cast<std::size_t>(flag[1]);
+        const auto existing_short_flag =
+          map.short_map[short_flag_letter];
         bool short_flag_already_exists = (existing_short_flag != nullptr);
         if (short_flag_already_exists) {
           std::ostringstream msg;
@@ -1560,7 +1561,7 @@ namespace convert {
       out_arg = argagg::convert::arg<T>(arg_str.c_str());
       return false;
     } else {
-      std::string arg_str(begin, s - begin);
+      std::string arg_str(begin, static_cast<std::size_t>(s - begin));
       out_arg = argagg::convert::arg<T>(arg_str.c_str());
       s += 1;
       return true;

@@ -1,6 +1,24 @@
 cmake_minimum_required( VERSION 2.8 )
 project( argagg CXX )
 
+add_library(
+  argagg
+  INTERFACE
+)
+
+add_library(
+  argagg::argagg
+  ALIAS
+  argagg
+)
+
+target_include_directories(
+  argagg
+  INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
 option(
   ARGAGG_BUILD_EXAMPLES
   "build examples"
@@ -68,7 +86,7 @@ if( ARGAGG_BUILD_EXAMPLES )
     joinargs
     PROPERTIES
       COMPILE_FLAGS "${ARGAGG_TEST_COMPILE_FLAGS}"
-      INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
+      LINK_LIBRARIES argagg
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   )
 
@@ -77,7 +95,7 @@ if( ARGAGG_BUILD_EXAMPLES )
     gengetopt_main1
     PROPERTIES
       COMPILE_FLAGS "${ARGAGG_TEST_COMPILE_FLAGS}"
-      INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
+      LINK_LIBRARIES argagg
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
       OUTPUT_NAME sample1
   )

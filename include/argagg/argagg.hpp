@@ -716,8 +716,6 @@ struct fmt_ostream : public std::ostringstream {
 std::string fmt_string(const std::string& s);
 
 
-} // namespace argagg
-
 
 /**
  * @brief
@@ -728,8 +726,6 @@ std::ostream& operator << (std::ostream& os, const argagg::parser& x);
 
 // ---- end of declarations, header-only implementations follow ----
 
-
-namespace argagg {
 
 
 template <typename T>
@@ -1685,9 +1681,6 @@ std::string fmt_string(const std::string& s)
 }
 
 
-} // namespace argagg
-
-
 inline
 std::ostream& operator << (std::ostream& os, const argagg::parser& x)
 {
@@ -1703,6 +1696,8 @@ std::ostream& operator << (std::ostream& os, const argagg::parser& x)
   }
   return os;
 }
+
+} // namespace argagg
 
 
 #endif // ARGAGG_ARGAGG_ARGAGG_HPP

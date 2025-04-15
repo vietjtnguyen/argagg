@@ -716,7 +716,6 @@ struct fmt_ostream : public std::ostringstream {
 std::string fmt_string(const std::string& s);
 
 
-
 /**
  * @brief
  * Writes the option help to the given stream.
@@ -724,8 +723,13 @@ std::string fmt_string(const std::string& s);
 std::ostream& operator << (std::ostream& os, const argagg::parser& x);
 
 
+} // namespace argagg
+
+
 // ---- end of declarations, header-only implementations follow ----
 
+
+namespace argagg {
 
 
 template <typename T>
@@ -1696,6 +1700,7 @@ std::ostream& operator << (std::ostream& os, const argagg::parser& x)
   }
   return os;
 }
+
 
 } // namespace argagg
 

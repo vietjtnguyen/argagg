@@ -108,6 +108,7 @@ if( ARGAGG_BUILD_TESTS )
 
   list( APPEND ARGAGG_TEST_SOURCES "test/test.cpp" )
   list( APPEND ARGAGG_TEST_SOURCES "test/test_csv.cpp" )
+  list( APPEND ARGAGG_TEST_SOURCES "test/test_issue_39.cpp" )
 
   find_path( OPENCV_INCLUDE_DIR "opencv2/opencv.hpp" )
   find_library( OPENCV_CORE_LIBRARY opencv_core )
